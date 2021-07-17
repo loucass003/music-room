@@ -1,0 +1,7 @@
+{
+  "name": "music-room",
+  "private": true,
+  "workspaces": [
+    "api"
+  ]
+}
