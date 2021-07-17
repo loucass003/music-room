@@ -1,5 +1,5 @@
 import { MikroOrmModuleOptions } from '@mikro-orm/nestjs'
-import path from 'path'
+import * as path from 'path'
 
 require('dotenv').config()
 
@@ -35,16 +35,19 @@ class ConfigService {
 
   public getMikroOrmConfig(): MikroOrmModuleOptions {
     return {
-        entities: ['../dist/entities'],
-        entitiesTs: ['../src/entities'],
-        type: 'postgresql',
-        baseDir: path.join(__dirname, '../..'),
-        host: this.getValue('POSTGRES_HOST'),
-        port: parseInt(this.getValue('POSTGRES_PORT')),
-        user: this.getValue('POSTGRES_USER'),
-        password: this.getValue('POSTGRES_PASSWORD'),
-        dbName: this.getValue('POSTGRES_DATABASE'),
-      }
+      entities: [path.join(__dirname, '../entities')],
+      entitiesTs: [path.join(__dirname, '../entities')],
+      type: 'postgresql',
+      baseDir: path.join(__dirname, '../..'),
+      host: this.getValue('POSTGRES_HOST'),
+      port: parseInt(this.getValue('POSTGRES_PORT')),
+      user: this.getValue('POSTGRES_USER'),
+      password: this.getValue('POSTGRES_PASSWORD'),
+      dbName: this.getValue('POSTGRES_DATABASE'),
+      migrations: {
+        path: path.join(__dirname, '../migrations'),
+      },
+    }
   }
 }
 
