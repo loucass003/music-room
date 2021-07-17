@@ -4,9 +4,7 @@ import { UserEntity } from 'src/entities/user.entity'
 import { UserResolver } from './user.resolver'
 
 @Module({
-  imports: [
-    MikroOrmModule.forFeature([UserEntity])
-  ],
+  imports: [MikroOrmModule.forFeature([UserEntity])],
   providers: [UserResolver],
 })
 export class UserModule {}

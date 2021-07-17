@@ -1,7 +1,8 @@
 import { MikroOrmModuleOptions } from '@mikro-orm/nestjs'
 import * as path from 'path'
+import * as dotenv from 'dotenv'
 
-require('dotenv').config()
+dotenv.config()
 
 class ConfigService {
   constructor(private env: { [k: string]: string | undefined }) {}
