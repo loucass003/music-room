@@ -21,16 +21,16 @@ class ConfigService {
   }
 
   public getPort() {
-    return parseInt(this.getValue('PORT')) || 3000
+    return parseInt(this.getValue('PORT', false)) || 3000
   }
 
   public getListenHost() {
-    return this.getValue('LISTEN_HOST') || '127.0.0.1'
+    return this.getValue('LISTEN_HOST', false) || '127.0.0.1'
   }
 
   public isProduction() {
     const mode = this.getValue('MODE', false)
-    return mode != 'DEV'
+    return mode === 'PRODUCTION'
   }
 
   public getMikroOrmConfig(): MikroOrmModuleOptions {
@@ -48,6 +48,20 @@ class ConfigService {
         path: path.join(__dirname, '../migrations'),
       },
     }
+  }
+
+  public getGraphQLConfig() {
+    return this.isProduction()
+      ? {
+          debug: false,
+          playground: false,
+          autoSchemaFile: path.join(__dirname, '../schema.gql'),
+        }
+      : {
+          debug: true,
+          playground: true,
+          autoSchemaFile: path.join(__dirname, '../schema.gql'),
+        }
   }
 }
 
