@@ -84,6 +84,10 @@ class ConfigService {
   public getOAuthRedirection(): string {
     return this.getValue('OAUTH_REDIRECTION', false) || '/'
   }
+
+  public getCookieSecret(): string {
+    return this.getValue('COOKIE_SECRET')
+  }
 }
 
 const configService = new ConfigService(process.env).ensureValues([
