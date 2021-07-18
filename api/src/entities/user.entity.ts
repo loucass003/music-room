@@ -1,5 +1,6 @@
 import { Entity, Property } from '@mikro-orm/core'
 import { Field, ObjectType } from '@nestjs/graphql'
+import { IsSelfMiddleware } from 'src/util/isself.middleware'
 import { BaseEntity } from './base.entity'
 
 @Entity()
@@ -10,7 +11,7 @@ export class UserEntity extends BaseEntity {
   name!: string
 
   @Property({ index: true, unique: true })
-  @Field()
+  @Field({ middleware: [IsSelfMiddleware] })
   email!: string
 
   /** Password hash */
@@ -20,12 +21,12 @@ export class UserEntity extends BaseEntity {
   @Property({ index: true, nullable: true, unique: true })
   googleId?: string
 
-  @Field() // todo isself middleware
+  @Field({ middleware: [IsSelfMiddleware] })
   get hasPassword(): boolean {
     return this.password !== null
   }
 
-  @Field() // todo isself middleware
+  @Field({ middleware: [IsSelfMiddleware] })
   get isGoogleLinked(): boolean {
     return this.googleId !== null
   }

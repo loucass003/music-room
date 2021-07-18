@@ -15,7 +15,6 @@ export class GoogleAuthController {
   @Get('redirect')
   @UseGuards(AuthGuard('google'))
   googleAuthRedirect(@Res() res: Response, @Req() req: Request) {
-    console.log(req.user)
     promisify(req.logIn).call(req, req.user!)
     res.redirect(configService.getOAuthRedirection())
   }
