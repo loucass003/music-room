@@ -2,6 +2,6 @@
   "name": "music-room",
   "private": true,
   "workspaces": [
-    "api"
+    "api", "web"
   ]
 }

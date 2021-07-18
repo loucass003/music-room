@@ -19,7 +19,7 @@ services:
       dockerfile: ./api.dockerfile
     restart: always
     ports:
-      - 3000:3000
+      - 4000:4000
     environment:
       MODE: DEV
       POSTGRES_HOST: db
@@ -27,7 +27,7 @@ services:
       POSTGRES_USER: music-room
       POSTGRES_PASSWORD: 123456
       POSTGRES_DATABASE: music-room
-      PORT: 3000
+      PORT: 4000
       LISTEN_HOST: 0.0.0.0
     volumes:
       - ./api:/app/api
