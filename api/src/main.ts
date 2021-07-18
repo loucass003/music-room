@@ -4,6 +4,7 @@ import { configService } from './config/config.service'
 import cookieParser from 'cookie-parser'
 import cookieSession from 'cookie-session'
 import passport from 'passport'
+import { ValidationPipe } from '@nestjs/common'
 
 const secret = 'some-cookie-secret'
 
@@ -13,6 +14,7 @@ async function bootstrap() {
   app.use(cookieSession({ secret }))
   app.use(passport.initialize())
   app.use(passport.session())
+  app.useGlobalPipes(new ValidationPipe())
   await app.listen(configService.getPort(), configService.getListenHost())
 }
 bootstrap()

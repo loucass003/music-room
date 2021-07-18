@@ -14,6 +14,6 @@ export class UserSession {
   @Field()
   public id!: number
 
-  @Field()
+  @Field(() => LoginStrategy)
   public loginStrategy!: LoginStrategy
 }

@@ -5,11 +5,11 @@ import { BaseEntity } from './base.entity'
 @Entity()
 @ObjectType()
 export class UserEntity extends BaseEntity {
-  @Property({ index: true })
+  @Property({ index: true, unique: true })
   @Field()
   name!: string
 
-  @Property({ index: true })
+  @Property({ index: true, unique: true })
   @Field()
   email!: string
 
@@ -17,7 +17,7 @@ export class UserEntity extends BaseEntity {
   @Property({ nullable: true })
   password?: string
 
-  @Property({ index: true, nullable: true })
+  @Property({ index: true, nullable: true, unique: true })
   googleId?: string
 
   @Field() // todo isself middleware

@@ -6,6 +6,7 @@ import { UserSession } from './session'
 @Injectable()
 export class CookieSerializer extends PassportSerializer {
   async serializeUser(session: any, done: (err: any, id?: any) => void) {
+    console.log('aa')
     done(null, classToPlain(session))
   }
   deserializeUser(payload: any, done: (err: any, id?: any) => void) {

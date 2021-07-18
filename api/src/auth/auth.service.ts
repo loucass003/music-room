@@ -1,7 +1,10 @@
-import { EntityRepository } from '@mikro-orm/core'
+import { EntityRepository, UniqueConstraintViolationException } from '@mikro-orm/core'
 import { InjectRepository } from '@mikro-orm/nestjs'
 import { UserEntity } from 'src/entities/user.entity'
 import * as argon2 from 'argon2'
+import { validate } from 'class-validator'
+import { RegisterDto } from './dto/register.dto'
+import { BadRequestException } from '@nestjs/common'
 
 export class AuthService {
   constructor(
@@ -24,12 +27,23 @@ export class AuthService {
     return user
   }
 
-  async createUser(email: string, password: string): Promise<UserEntity> {
+  async createUser(data: RegisterDto): Promise<UserEntity> {
     const user = this.userRepository.create({
-      email,
-      password: await argon2.hash(password),
+      email: data.email,
+      name: data.name,
+      password: await argon2.hash(data.password),
     })
-    await this.userRepository.persistAndFlush(user)
+    try {
+      await this.userRepository.persistAndFlush(user)
+    } catch (e) {
+      if (e instanceof UniqueConstraintViolationException) {
+        if ((e as any).constraint === 'user_entity_name_unique') {
+          throw new BadRequestException('name already taken')
+        } else if ((e as any).constraint === 'user_entity_email_unique') {
+          throw new BadRequestException('email already taken')
+        }
+      }
+    }
     return user
   }
 
@@ -46,7 +60,8 @@ export class AuthService {
       user = this.userRepository.create({
         googleId: googleProfile.id,
         name: googleProfile.displayName,
-        email: googleProfile.emails.filter((email: any) => email.verified)[0],
+        email: googleProfile.emails.filter((email: any) => email.verified)[0]
+          .value,
       })
       await this.userRepository.persistAndFlush(user)
     }
