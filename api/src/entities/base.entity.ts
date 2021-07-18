@@ -2,11 +2,11 @@ import { PrimaryKey, Property } from '@mikro-orm/core'
 
 export abstract class BaseEntity {
   @PrimaryKey()
-  id: string
+  id!: number
 
-  @Property({ type: 'timestamptz' })
+  @Property({ columnType: 'timestamptz' })
   createdAt: Date = new Date()
 
-  @Property({ type: 'timestamptz', onUpdate: () => new Date() })
+  @Property({ columnType: 'timestamptz', onUpdate: () => new Date() })
   updatedAt: Date = new Date()
 }

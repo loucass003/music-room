@@ -5,11 +5,28 @@ import { BaseEntity } from './base.entity'
 @Entity()
 @ObjectType()
 export class UserEntity extends BaseEntity {
-  @Property()
+  @Property({ index: true })
   @Field()
-  name: string
+  name!: string
 
-  @Property()
+  @Property({ index: true })
   @Field()
-  password: string
+  email!: string
+
+  /** Password hash */
+  @Property({ nullable: true })
+  password?: string
+
+  @Property({ index: true, nullable: true })
+  googleId?: string
+
+  @Field() // todo isself middleware
+  get hasPassword(): boolean {
+    return this.password !== null
+  }
+
+  @Field() // todo isself middleware
+  get isGoogleLinked(): boolean {
+    return this.googleId !== null
+  }
 }
