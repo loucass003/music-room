@@ -1,6 +1,7 @@
 import { PrimaryKey, Property } from '@mikro-orm/core'
-import { Field, ID } from '@nestjs/graphql'
+import { Field, ID, ObjectType } from '@nestjs/graphql'
 
+@ObjectType({ isAbstract: true })
 export abstract class BaseEntity {
   @PrimaryKey()
   @Field(() => ID)
