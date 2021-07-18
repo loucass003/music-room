@@ -1,8 +1,12 @@
 import { MikroOrmModuleOptions } from '@mikro-orm/nestjs'
+import { GqlModuleOptions as OGqlModuleOptions } from '@nestjs/graphql'
 import * as path from 'path'
 import * as dotenv from 'dotenv'
 
 dotenv.config()
+
+// fix wrong typing
+type GqlModuleOptions = OGqlModuleOptions & { playground: boolean }
 
 class ConfigService {
   constructor(private env: { [k: string]: string | undefined }) {}
@@ -13,6 +17,7 @@ class ConfigService {
       throw new Error(`config error - missing env.${key}`)
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return value!
   }
 
@@ -51,7 +56,7 @@ class ConfigService {
     }
   }
 
-  public getGraphQLConfig() {
+  public getGraphQLConfig(): GqlModuleOptions {
     return this.isProduction()
       ? {
           debug: false,
@@ -63,6 +68,37 @@ class ConfigService {
           playground: true,
           autoSchemaFile: path.join(__dirname, '../schema.gql'),
         }
+  }
+
+  public getGoogleClientKeys(): { id: string; secret: string } {
+    return {
+      id: this.getValue('GOOGLE_CLIENT_ID'),
+      secret: this.getValue('GOOGLE_CLIENT_SECRET'),
+    }
+  }
+
+  public getGoogleOAuthUrl(): string {
+    return this.getValue('GOOGLE_AUTH_LOGIN_URL')
+  }
+
+  public getOAuthRedirection(): string {
+    return this.getValue('OAUTH_REDIRECTION', false) || '/'
+  }
+
+  public getCookieSecret(): string {
+    return this.getValue('COOKIE_SECRET')
+  }
+
+  public getSendgridApiKey(): string {
+    return this.getValue('SENDGRID_API_KEY')
+  }
+
+  public getSendgridSender(): string {
+    return this.getValue('SENDGRID_SENDER')
+  }
+
+  public getAccountActivationUrl(): string {
+    return this.getValue('ACCOUNT_ACTIVATION_URL')
   }
 }
 

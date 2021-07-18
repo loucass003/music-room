@@ -1,12 +1,17 @@
 import { PrimaryKey, Property } from '@mikro-orm/core'
+import { Field, ID, ObjectType } from '@nestjs/graphql'
 
+@ObjectType({ isAbstract: true })
 export abstract class BaseEntity {
   @PrimaryKey()
-  id: string
+  @Field(() => ID)
+  id!: number
 
-  @Property({ type: 'timestamptz' })
+  @Property({ columnType: 'timestamptz' })
+  @Field()
   createdAt: Date = new Date()
 
-  @Property({ type: 'timestamptz', onUpdate: () => new Date() })
+  @Property({ columnType: 'timestamptz', onUpdate: () => new Date() })
+  @Field()
   updatedAt: Date = new Date()
 }
