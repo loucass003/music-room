@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { Entity, Property } from '@mikro-orm/core'
 import { Field, ObjectType } from '@nestjs/graphql'
-import { IsSelfMiddleware } from 'src/util/isself.middleware'
+import { IsSelfMiddleware } from '../util/isself.middleware'
 import { BaseEntity } from './base.entity'
 
 @Entity()
@@ -20,6 +21,12 @@ export class UserEntity extends BaseEntity {
 
   @Property({ index: true, nullable: true, unique: true })
   googleId?: string
+
+  @Property({ default: false })
+  emailValidated: boolean = false
+
+  @Property({ index: true, nullable: true })
+  validationCode?: string
 
   @Field({ middleware: [IsSelfMiddleware] })
   get hasPassword(): boolean {

@@ -88,6 +88,18 @@ class ConfigService {
   public getCookieSecret(): string {
     return this.getValue('COOKIE_SECRET')
   }
+
+  public getSendgridApiKey(): string {
+    return this.getValue('SENDGRID_API_KEY')
+  }
+
+  public getSendgridSender(): string {
+    return this.getValue('SENDGRID_SENDER')
+  }
+
+  public getAccountActivationUrl(): string {
+    return this.getValue('ACCOUNT_ACTIVATION_URL')
+  }
 }
 
 const configService = new ConfigService(process.env).ensureValues([

@@ -9,11 +9,13 @@ import { CookieSerializer } from './cookie.serializer'
 import { LocalLoginGuard } from './local/locallogin.guard'
 import { GoogleStrategy } from './google/google.strategy'
 import { GoogleAuthController } from './google/googleauth.controller'
+import { MailsModule } from 'src/mails/mails.module'
 
 @Module({
   imports: [
     PassportModule.register({ session: true }),
     MikroOrmModule.forFeature([UserEntity]),
+    MailsModule,
   ],
   providers: [
     AuthService,

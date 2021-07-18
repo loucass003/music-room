@@ -1,16 +1,7 @@
 import { EntityRepository } from '@mikro-orm/core'
 import { InjectRepository } from '@mikro-orm/nestjs'
-import { ExecutionContext, Req, UseGuards } from '@nestjs/common'
-import {
-  Args,
-  Context,
-  GqlExecutionContext,
-  GraphQLExecutionContext,
-  Mutation,
-  Query,
-  Resolver,
-} from '@nestjs/graphql'
-import { Request } from 'express'
+import { UseGuards } from '@nestjs/common'
+import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql'
 import { configService } from 'src/config/config.service'
 import { UserEntity } from 'src/entities/user.entity'
 import { AuthGuard } from './auth.guard'
@@ -64,6 +55,14 @@ export class AuthResolver {
   @Mutation(() => Boolean)
   logout(@Context() context: any): boolean {
     context.req.logOut()
+    return true
+  }
+
+  @Mutation(() => Boolean)
+  async activateAccount(
+    @Args('validationCode') validationCode: string,
+  ): Promise<boolean> {
+    await this.authService.activateAccount(validationCode)
     return true
   }
 }

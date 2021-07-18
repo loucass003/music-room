@@ -4,6 +4,7 @@ import { GraphQLModule } from '@nestjs/graphql'
 import { configService } from './config/config.service'
 import { UserModule } from './user/user.module'
 import { AuthModule } from './auth/auth.module'
+import { MailsModule } from './mails/mails.module'
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { AuthModule } from './auth/auth.module'
     GraphQLModule.forRoot(configService.getGraphQLConfig()),
     UserModule,
     AuthModule,
+    MailsModule,
   ],
   controllers: [],
   providers: [],
