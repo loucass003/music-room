@@ -16,12 +16,10 @@ class RegisterForm {
 
   @MinLength(8)
   password!: string
-
 }
 
 
 export function SignIn() {
-
   const { register, handleSubmit, formState: { errors } } = useForm<RegisterForm>({
     resolver: classValidatorResolver(RegisterForm)
   });
