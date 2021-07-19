@@ -6,6 +6,7 @@ COPY ./package.json ./package.json
 COPY ./yarn.lock ./yarn.lock
 
 COPY ./api ./api
+COPY ./common ./common
 
 RUN yarn install --frozen-lockfile
 

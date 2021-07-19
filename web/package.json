@@ -8,6 +8,7 @@
   "dependencies": {
     "@apollo/client": "^3.3.21",
     "@hookform/resolvers": "^2.6.1",
+    "@music-room/common": "./common",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
@@ -21,14 +22,14 @@
     "react-hook-form": "^7.11.1",
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.3",
-    "web-vitals": "^1.0.1",
-    "@music-room/common": "./common"
+    "web-vitals": "^1.0.1"
   },
   "scripts": {
     "start": "craco start",
     "build": "craco build",
     "test": "craco test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "generate": "graphql-codegen --config codegen.yml"
   },
   "eslintConfig": {
     "extends": [
@@ -50,11 +51,18 @@
   },
   "devDependencies": {
     "@craco/craco": "^6.2.0",
+    "@graphql-codegen/cli": "1.21.7",
     "@types/react": "^17.0.14",
     "@types/react-dom": "^17.0.9",
     "@types/react-router-dom": "^5.1.8",
     "autoprefixer": "^9",
     "postcss": "^7",
-    "tailwindcss": "npm:@tailwindcss/postcss7-compat"
+    "tailwindcss": "npm:@tailwindcss/postcss7-compat",
+    "@graphql-codegen/typescript-operations": "1.18.4",
+    "@graphql-codegen/typescript": "1.23.0",
+    "@graphql-codegen/typescript-document-nodes": "1.17.16",
+    "@graphql-codegen/typescript-react-apollo": "2.3.1",
+    "@graphql-codegen/typescript-graphql-files-modules": "1.18.1",
+    "@graphql-codegen/introspection": "1.18.2"
   }
 }

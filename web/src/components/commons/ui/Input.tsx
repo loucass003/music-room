@@ -1,4 +1,5 @@
 import cntl from "cntl";
+import { forwardRef } from "react";
 
 interface InputProps extends React.ComponentPropsWithRef<'input'>  {
   error?: string;
@@ -25,11 +26,11 @@ const inputErrorCN = cntl`
   my-1
 `
 
-export function Input({ error, ...others }: InputProps) {
+export const Input = forwardRef<HTMLInputElement, InputProps>(({ error, ...others }: InputProps, ref) => {
   return (
     <div className="appInput">
-      <input {...others} className={inputCN({ hasError: !!error })}></input>
+      <input ref={ref} {...others} className={inputCN({ hasError: !!error })}></input>
       {error && <div className={inputErrorCN}>{error}</div>}
     </div>
   );
-}
+});

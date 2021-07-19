@@ -1,0 +1,10 @@
+query me {
+  me {
+    id
+    name
+  }
+}
+
+mutation register($email: String!, $name: String!, $password: String!, $confirmPassword: String!) {
+  register(data: { email: $email, name: $name, password: $password, confirmPassword: $confirmPassword })
+}

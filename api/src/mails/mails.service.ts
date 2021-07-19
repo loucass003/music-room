@@ -7,7 +7,6 @@ import { MailTemplate } from './mailtemplate'
 @Injectable()
 export class MailsService {
   constructor() {
-    console.log('ahah')
     sendgrid.setApiKey(configService.getSendgridApiKey())
   }
 
