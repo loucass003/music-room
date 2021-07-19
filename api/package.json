@@ -1,5 +1,5 @@
 {
-  "name": "api",
+  "name": "@music-room/api",
   "version": "0.0.1",
   "description": "",
   "author": "",
@@ -44,7 +44,8 @@
     "passport-local": "^1.0.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^6.6.3"
+    "rxjs": "^6.6.3",
+    "@music-room/common": "./common"
   },
   "devDependencies": {
     "@mikro-orm/cli": "^4.5.7",

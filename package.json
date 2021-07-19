@@ -2,6 +2,11 @@
   "name": "music-room",
   "private": true,
   "workspaces": [
-    "api", "web"
-  ]
+    "api",
+    "web",
+    "common"
+  ],
+  "scripts": {
+    "build-common": "yarn --cwd common build"
+  }
 }

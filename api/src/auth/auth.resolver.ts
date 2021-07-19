@@ -21,7 +21,7 @@ export class AuthResolver {
 
   @Mutation(() => Boolean)
   @UseGuards(new LocalLoginGuard())
-  async loginLocal(
+  async login(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     @Args('email') _email: string,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -37,7 +37,7 @@ export class AuthResolver {
   }
 
   @Mutation(() => Boolean)
-  async registerLocal(@Args('data') data: RegisterDto): Promise<boolean> {
+  async register(@Args('data') data: RegisterDto): Promise<boolean> {
     await this.authService.createUser(data)
     return true
   }

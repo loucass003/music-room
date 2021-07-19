@@ -9,10 +9,12 @@
     "target": "es2017",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
+    "rootDir": "src",
     "incremental": true,
-    "strict": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "composite": true,
+    "resolveJsonModule": true,
+    "strictNullChecks": true
   },
-  "references": [{ "path": "../common", "module": "@music-room/common" }]
+  "include": ["**/**.ts"]
 }
