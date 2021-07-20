@@ -4,14 +4,22 @@ import {
   UniqueConstraintViolationException,
 } from '@mikro-orm/core'
 import { InjectRepository } from '@mikro-orm/nestjs'
-import { Args, Resolver, Query, ID, Info, Mutation } from '@nestjs/graphql'
+import {
+  Args,
+  Resolver,
+  Query,
+  ID,
+  Info,
+  Mutation,
+  Subscription,
+} from '@nestjs/graphql'
 import { GraphQLResolveInfo } from 'graphql'
-import { UserEntity } from 'src/entities/user.entity'
 import fieldsToRelations from 'graphql-fields-to-relations'
 import { PlaylistEntity } from 'src/entities/playlist.entity'
 import { CurrentSession } from 'src/auth/currentsession.decorator'
 import {
   BadRequestException,
+  Inject,
   NotFoundException,
   UseGuards,
 } from '@nestjs/common'
@@ -20,6 +28,14 @@ import { UserSession } from 'src/auth/session'
 import { PlaylistUserEntity } from 'src/entities/playlistuser.entity'
 import { UserDeviceEntity } from 'src/entities/userdevice.entity'
 import { CreatePlaylistDto, UpdatePlaylistDto } from './dto/createplaylist.dto'
+import {
+  PlaylistDeleteEvent,
+  PlaylistEvent,
+  PlaylistInviteEvent,
+  PlaylistKickEvent,
+  PlaylistUpdateEvent,
+} from './playlistevent'
+import { PubSubEngine } from 'graphql-subscriptions'
 
 @Resolver()
 export class PlaylistResolver {
@@ -30,7 +46,25 @@ export class PlaylistResolver {
     private readonly playlistUserRepository: EntityRepository<PlaylistUserEntity>,
     @InjectRepository(UserDeviceEntity)
     private readonly deviceRepository: EntityRepository<UserDeviceEntity>,
+    @Inject('PUB_SUB') private readonly pubSub: PubSubEngine,
   ) {}
+
+  @Subscription(() => PlaylistEvent, {
+    filter: (payload, variables) => payload.playlistId == variables.playlist,
+    resolve: data => data,
+  })
+  async playlistEvents(
+    // @CurrentSession() session: UserSession,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    @Args('playlist', { type: () => ID }) _playlist: number,
+  ) {
+    // await this.playlistRepository.findOneOrFail({
+    //   id: playlist,
+    //   ownerDevice: session.deviceId, // permission check
+    // }) // todo permission check
+
+    return this.pubSub.asyncIterator('playlistEvent')
+  }
 
   @Query(() => [PlaylistEntity])
   async publicPlaylists(@Info() info: GraphQLResolveInfo) {
@@ -72,6 +106,15 @@ export class PlaylistResolver {
       data,
     )
     if (count == 0) throw new NotFoundException('playlist not found')
+
+    await this.pubSub.publish(
+      'playlistEvent',
+      new PlaylistUpdateEvent({
+        playlistId: id,
+        ...data,
+      }),
+    )
+
     return true
   }
 
@@ -86,6 +129,13 @@ export class PlaylistResolver {
       ownerDevice: session.deviceId,
     })
     if (count == 0) throw new NotFoundException('playlist not found')
+
+    await this.pubSub.publish(
+      'playlistEvent',
+      new PlaylistDeleteEvent({
+        playlistId: id,
+      }),
+    )
     return true
   }
 
@@ -100,7 +150,7 @@ export class PlaylistResolver {
       throw new BadRequestException('cannot invite yourself in a playlist')
 
     const [d] = await Promise.all([
-      this.deviceRepository.findOneOrFail(device),
+      this.deviceRepository.findOneOrFail(device, ['user']),
       this.playlistRepository.findOneOrFail({
         // permission check
         id: playlist,
@@ -126,6 +176,17 @@ export class PlaylistResolver {
         } else throw e
       } else throw e
     }
+
+    await this.pubSub.publish(
+      'playlistEvent',
+      new PlaylistInviteEvent({
+        playlistId: playlist,
+        deviceId: d.id,
+        deviceName: d.name,
+        userId: d.user.id,
+        userName: d.user.name,
+      }),
+    )
     return true
   }
 
@@ -136,17 +197,31 @@ export class PlaylistResolver {
     @Args('playlist', { type: () => ID }) playlist: number,
     @Args('device', { type: () => ID }) device: number,
   ) {
-    await this.playlistRepository.findOneOrFail({
-      // permission check
-      id: playlist,
-      ownerDevice: session.deviceId,
-    })
+    const [d] = await Promise.all([
+      this.deviceRepository.findOneOrFail(device, ['user']),
+      this.playlistRepository.findOneOrFail({
+        // permission check
+        id: playlist,
+        ownerDevice: session.deviceId,
+      }),
+    ])
 
     const count = await this.playlistUserRepository.nativeDelete({
       userDevice: device,
       playlist,
     })
     if (count == 0) throw new NotFoundException('playlist user not found')
+
+    await this.pubSub.publish(
+      'playlistEvent',
+      new PlaylistKickEvent({
+        deviceId: d.id,
+        deviceName: d.name,
+        playlistId: playlist,
+        userId: d.user.id,
+        userName: d.user.name,
+      }),
+    )
     return true
   }
 }

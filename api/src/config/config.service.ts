@@ -62,11 +62,13 @@ class ConfigService {
           debug: false,
           playground: false,
           autoSchemaFile: path.join(__dirname, '../schema.gql'),
+          installSubscriptionHandlers: true,
         }
       : {
           debug: true,
           playground: true,
           autoSchemaFile: path.join(__dirname, '../schema.gql'),
+          installSubscriptionHandlers: true,
         }
   }
 

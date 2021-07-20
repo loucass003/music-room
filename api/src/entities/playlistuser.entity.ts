@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-inferrable-types */
-import { Entity, IdentifiedReference, ManyToOne, Unique } from '@mikro-orm/core'
+import { Entity, ManyToOne, Unique } from '@mikro-orm/core'
 import { Field, ObjectType } from '@nestjs/graphql'
 import { BaseEntity } from './base.entity'
 import { PlaylistEntity } from './playlist.entity'
@@ -18,13 +18,13 @@ export class PlaylistUserEntity extends BaseEntity {
 
   @Field(() => PlaylistEntity)
   @ManyToOne(() => PlaylistEntity)
-  playlist!: IdentifiedReference<PlaylistEntity>
+  playlist!: PlaylistEntity
 
   @Field(() => UserEntity)
   @ManyToOne(() => UserEntity)
-  user!: IdentifiedReference<UserEntity>
+  user!: UserEntity
 
-  @Field(() => UserDeviceEntity)
+  @Field()
   @ManyToOne(() => UserDeviceEntity)
-  userDevice!: IdentifiedReference<UserDeviceEntity>
+  userDevice!: UserDeviceEntity
 }

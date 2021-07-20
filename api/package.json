@@ -40,6 +40,7 @@
     "cookie-session": "^1.4.0",
     "graphql": "^15.5.1",
     "graphql-fields-to-relations": "^1.0.4",
+    "graphql-subscriptions": "^1.2.1",
     "graphql-tools": "^7.0.5",
     "passport": "^0.4.1",
     "passport-google-oauth20": "^2.0.0",

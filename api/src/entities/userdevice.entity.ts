@@ -2,7 +2,6 @@
 import {
   Collection,
   Entity,
-  IdentifiedReference,
   Index,
   ManyToOne,
   OneToMany,
@@ -28,7 +27,7 @@ export class UserDeviceEntity extends BaseEntity {
 
   @Field(() => UserEntity)
   @ManyToOne(() => UserEntity)
-  user!: IdentifiedReference<UserEntity>
+  user!: UserEntity
 
   @Property()
   @Field()

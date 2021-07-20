@@ -2,7 +2,6 @@
 import {
   Collection,
   Entity,
-  IdentifiedReference,
   ManyToOne,
   OneToMany,
   Property,
@@ -18,11 +17,11 @@ import { UserDeviceEntity } from './userdevice.entity'
 export class PlaylistEntity extends BaseEntity {
   @Field(() => UserEntity)
   @ManyToOne(() => UserEntity)
-  owner!: IdentifiedReference<UserEntity>
+  owner!: UserEntity
 
-  @Field(() => UserDeviceEntity)
+  @Field()
   @ManyToOne(() => UserDeviceEntity)
-  ownerDevice!: IdentifiedReference<UserDeviceEntity>
+  ownerDevice!: UserDeviceEntity
 
   @Field()
   @Property()
@@ -39,4 +38,8 @@ export class PlaylistEntity extends BaseEntity {
   @Field(() => [PlaylistUserEntity])
   @OneToMany(() => PlaylistUserEntity, u => u.playlist)
   playlistUsers = new Collection<PlaylistUserEntity>(this)
+
+  @Field(() => [String])
+  @Property()
+  entries: string[] = []
 }
