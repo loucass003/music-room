@@ -1,14 +1,18 @@
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 import {
+  Collection,
   Entity,
   IdentifiedReference,
   Index,
   ManyToOne,
+  OneToMany,
   Property,
   Unique,
 } from '@mikro-orm/core'
 import { Field, ObjectType } from '@nestjs/graphql'
 import { BaseEntity } from './base.entity'
+import { PlaylistEntity } from './playlist.entity'
+import { PlaylistUserEntity } from './playlistuser.entity'
 import { UserEntity } from './user.entity'
 
 @Entity()
@@ -32,4 +36,12 @@ export class UserDeviceEntity extends BaseEntity {
 
   @Property()
   secret!: string
+
+  @Field(() => [PlaylistUserEntity])
+  @OneToMany(() => PlaylistUserEntity, p => p.userDevice)
+  invitedPlaylistUsers = new Collection<PlaylistUserEntity>(this)
+
+  @Field(() => [PlaylistEntity])
+  @OneToMany(() => PlaylistEntity, p => p.ownerDevice)
+  ownPlaylists = new Collection<PlaylistEntity>(this)
 }

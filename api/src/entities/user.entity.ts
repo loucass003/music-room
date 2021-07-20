@@ -12,6 +12,8 @@ import {
 import { Field, ObjectType } from '@nestjs/graphql'
 import { IsSelfMiddleware } from '../util/isself.middleware'
 import { BaseEntity } from './base.entity'
+import { PlaylistEntity } from './playlist.entity'
+import { PlaylistUserEntity } from './playlistuser.entity'
 import { UserDeviceEntity } from './userdevice.entity'
 
 @Entity()
@@ -57,6 +59,14 @@ export class UserEntity extends BaseEntity {
   @OneToMany(() => UserDeviceEntity, device => device.user, {
     cascade: [Cascade.PERSIST, Cascade.REMOVE],
   })
-  @Field(() => [UserDeviceEntity])
+  @Field(() => [UserDeviceEntity], { middleware: [IsSelfMiddleware] })
   devices = new Collection<UserDeviceEntity>(this)
+
+  @Field(() => [PlaylistUserEntity], { middleware: [IsSelfMiddleware] })
+  @OneToMany(() => PlaylistUserEntity, p => p.user)
+  playlistUsers = new Collection<PlaylistUserEntity>(this)
+
+  @Field(() => PlaylistEntity)
+  @OneToMany(() => PlaylistEntity, p => p.owner)
+  ownPlaylists = new Collection<PlaylistEntity>(this)
 }

@@ -5,6 +5,7 @@ import { configService } from './config/config.service'
 import { UserModule } from './user/user.module'
 import { AuthModule } from './auth/auth.module'
 import { MailsModule } from './mails/mails.module'
+import { PlaylistModule } from './playlist/playlist.module'
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { MailsModule } from './mails/mails.module'
     UserModule,
     AuthModule,
     MailsModule,
+    PlaylistModule,
   ],
   controllers: [],
   providers: [],

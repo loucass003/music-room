@@ -17,6 +17,9 @@ export class UserSession {
   @Field({ nullable: true })
   public deviceName?: string
 
+  @Field(() => ID, { nullable: true })
+  public deviceId?: number
+
   @Field(() => LoginStrategy)
   public loginStrategy!: LoginStrategy
 }

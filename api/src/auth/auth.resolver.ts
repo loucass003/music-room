@@ -13,12 +13,15 @@ import { RegisterDto } from './dto/register.dto'
 import { GraphQLResolveInfo } from 'graphql'
 import fieldsToRelations from 'graphql-fields-to-relations'
 import { promisify } from 'util'
+import { UserDeviceEntity } from 'src/entities/userdevice.entity'
 
 @Resolver()
 export class AuthResolver {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: EntityRepository<UserEntity>,
+    @InjectRepository(UserDeviceEntity)
+    private readonly deviceRepository: EntityRepository<UserDeviceEntity>,
     private readonly authService: AuthService,
   ) {}
 
@@ -41,6 +44,18 @@ export class AuthResolver {
   ) {
     return this.userRepository.findOneOrFail(
       session.id,
+      fieldsToRelations(info),
+    )
+  }
+
+  @Query(() => UserDeviceEntity)
+  @UseGuards(new AuthGuard())
+  async currentDevice(
+    @CurrentSession() session: UserSession,
+    @Info() info: GraphQLResolveInfo,
+  ) {
+    return this.deviceRepository.findOneOrFail(
+      session.deviceId!,
       fieldsToRelations(info),
     )
   }
@@ -81,9 +96,16 @@ export class AuthResolver {
     @CurrentSession() session: UserSession,
     @Args('deviceName') deviceName: string,
     @Args('deviceSecret') deviceSecret: string,
+    @Context() context: any,
   ): Promise<boolean> {
-    await this.authService.verifyDevice(session.id, deviceName, deviceSecret)
+    const device = await this.authService.verifyDevice(
+      session.id,
+      deviceName,
+      deviceSecret,
+    )
+    session.deviceId = device.id
     session.deviceName = deviceName
+    promisify(context.req.logIn).call(context.req, session)
     return true
   }
 
@@ -95,7 +117,12 @@ export class AuthResolver {
     @Args('deviceSecret') deviceSecret: string,
     @Context() context: any,
   ): Promise<boolean> {
-    await this.authService.createDevice(session.id, deviceName, deviceSecret)
+    const device = await this.authService.createDevice(
+      session.id,
+      deviceName,
+      deviceSecret,
+    )
+    session.deviceId = device.id
     session.deviceName = deviceName
     promisify(context.req.logIn).call(context.req, session)
     return true

@@ -132,7 +132,11 @@ export class AuthService {
 
   // devices
 
-  async verifyDevice(user: number, deviceName: string, deviceSecret: string) {
+  async verifyDevice(
+    user: number,
+    deviceName: string,
+    deviceSecret: string,
+  ): Promise<UserDeviceEntity> {
     const device = await this.deviceRepository.findOne({
       user,
       name: deviceName,
@@ -142,9 +146,15 @@ export class AuthService {
 
     if (!(await argon2.verify(device.secret, deviceSecret)))
       throw new BadRequestException('invalid device secret')
+
+    return device
   }
 
-  async createDevice(user: number, deviceName: string, deviceSecret: string) {
+  async createDevice(
+    user: number,
+    deviceName: string,
+    deviceSecret: string,
+  ): Promise<UserDeviceEntity> {
     const device = this.deviceRepository.create({
       user,
       name: deviceName,
@@ -164,5 +174,7 @@ export class AuthService {
         } else throw e
       } else throw e
     }
+
+    return device
   }
 }
