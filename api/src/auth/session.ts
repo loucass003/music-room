@@ -1,4 +1,4 @@
-import { Field, ObjectType, registerEnumType } from '@nestjs/graphql'
+import { Field, ID, ObjectType, registerEnumType } from '@nestjs/graphql'
 
 export enum LoginStrategy {
   LOCAL,
@@ -11,8 +11,11 @@ registerEnumType(LoginStrategy, {
 
 @ObjectType()
 export class UserSession {
-  @Field()
+  @Field(() => ID)
   public id!: number
+
+  @Field({ nullable: true })
+  public deviceName?: string
 
   @Field(() => LoginStrategy)
   public loginStrategy!: LoginStrategy

@@ -16,12 +16,15 @@ import { MailsService } from 'src/mails/mails.service'
 import crypto from 'crypto'
 import { ActivateAccountTemplate } from 'src/mails/templates/activateaccount.template'
 import { configService } from 'src/config/config.service'
+import { UserDeviceEntity } from 'src/entities/userdevice.entity'
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: EntityRepository<UserEntity>,
+    @InjectRepository(UserDeviceEntity)
+    private readonly deviceRepository: EntityRepository<UserDeviceEntity>,
     private readonly mailsService: MailsService,
   ) {}
 
@@ -32,10 +35,10 @@ export class AuthService {
       !user.password ||
       !(await argon2.verify(user.password, password))
     ) {
-      throw new UnauthorizedException('invalid login or password')
+      throw new BadRequestException('invalid login or password')
     }
     if (!user.emailValidated) {
-      throw new UnauthorizedException('you must validate your email first')
+      throw new BadRequestException('you must validate your email first')
     }
     return user
   }
@@ -51,13 +54,15 @@ export class AuthService {
       await this.userRepository.persistAndFlush(user)
     } catch (e) {
       if (e instanceof UniqueConstraintViolationException) {
-        if ((e as any).constraint === 'user_entity_name_unique') {
+        if ((e as any).constraint === UserEntity.NAME_UNIQUE_CONSTRAINT) {
           throw new BadRequestException('name already taken')
-        } else if ((e as any).constraint === 'user_entity_email_unique') {
+        } else if (
+          (e as any).constraint === UserEntity.EMAIL_UNIQUE_CONSTRAINT
+        ) {
           throw new BadRequestException(
             'an account with this email already exists',
           )
-        }
+        } else throw e
       } else throw e
     }
 
@@ -100,13 +105,15 @@ export class AuthService {
         await this.userRepository.persistAndFlush(user)
       } catch (e) {
         if (e instanceof UniqueConstraintViolationException) {
-          if ((e as any).constraint === 'user_entity_name_unique') {
+          if ((e as any).constraint === UserEntity.NAME_UNIQUE_CONSTRAINT) {
             throw new BadRequestException('name already taken')
-          } else if ((e as any).constraint === 'user_entity_email_unique') {
+          } else if (
+            (e as any).constraint === UserEntity.EMAIL_UNIQUE_CONSTRAINT
+          ) {
             throw new BadRequestException(
               'an account with this email already exists',
             )
-          }
+          } else throw e
         } else throw e
       }
     }
@@ -121,5 +128,41 @@ export class AuthService {
     user.validationCode = undefined
     user.emailValidated = true
     await this.userRepository.persistAndFlush(user)
+  }
+
+  // devices
+
+  async verifyDevice(user: number, deviceName: string, deviceSecret: string) {
+    const device = await this.deviceRepository.findOne({
+      user,
+      name: deviceName,
+    })
+
+    if (!device) throw new NotFoundException('cannot find device')
+
+    if (!(await argon2.verify(device.secret, deviceSecret)))
+      throw new BadRequestException('invalid device secret')
+  }
+
+  async createDevice(user: number, deviceName: string, deviceSecret: string) {
+    const device = this.deviceRepository.create({
+      user,
+      name: deviceName,
+      secret: await argon2.hash(deviceSecret),
+    })
+
+    try {
+      await this.deviceRepository.persistAndFlush(device)
+    } catch (e) {
+      if (e instanceof UniqueConstraintViolationException) {
+        if (
+          (e as any).constraint === UserDeviceEntity.USER_NAME_UNIQUE_CONSTRAINT
+        ) {
+          throw new BadRequestException(
+            'a device with this name already exists',
+          )
+        } else throw e
+      } else throw e
+    }
   }
 }

@@ -1,17 +1,32 @@
 /* eslint-disable @typescript-eslint/no-inferrable-types */
-import { Entity, Property } from '@mikro-orm/core'
+import {
+  Cascade,
+  Collection,
+  Entity,
+  Index,
+  ManyToOne,
+  OneToMany,
+  Property,
+  Unique,
+} from '@mikro-orm/core'
 import { Field, ObjectType } from '@nestjs/graphql'
 import { IsSelfMiddleware } from '../util/isself.middleware'
 import { BaseEntity } from './base.entity'
+import { UserDeviceEntity } from './userdevice.entity'
 
 @Entity()
 @ObjectType()
 export class UserEntity extends BaseEntity {
-  @Property({ index: true, unique: true })
+  static NAME_UNIQUE_CONSTRAINT = 'user_entity_name_unique'
+  static EMAIL_UNIQUE_CONSTRAINT = 'user_entity_email_unique'
+
+  @Property({ index: true })
+  @Unique({ name: UserEntity.NAME_UNIQUE_CONSTRAINT })
   @Field()
   name!: string
 
-  @Property({ index: true, unique: true })
+  @Property({ index: true })
+  @Unique({ name: UserEntity.EMAIL_UNIQUE_CONSTRAINT })
   @Field({ middleware: [IsSelfMiddleware] })
   email!: string
 
@@ -19,7 +34,8 @@ export class UserEntity extends BaseEntity {
   @Property({ nullable: true })
   password?: string
 
-  @Property({ index: true, nullable: true, unique: true })
+  @Property({ index: true, nullable: true })
+  @Unique()
   googleId?: string
 
   @Property({ default: false })
@@ -37,4 +53,10 @@ export class UserEntity extends BaseEntity {
   get isGoogleLinked(): boolean {
     return this.googleId !== null
   }
+
+  @OneToMany(() => UserDeviceEntity, device => device.user, {
+    cascade: [Cascade.PERSIST, Cascade.REMOVE],
+  })
+  @Field(() => [UserDeviceEntity])
+  devices = new Collection<UserDeviceEntity>(this)
 }

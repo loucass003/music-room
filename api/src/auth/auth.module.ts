@@ -10,11 +10,12 @@ import { LocalLoginGuard } from './local/locallogin.guard'
 import { GoogleStrategy } from './google/google.strategy'
 import { GoogleAuthController } from './google/googleauth.controller'
 import { MailsModule } from 'src/mails/mails.module'
+import { UserDeviceEntity } from 'src/entities/userdevice.entity'
 
 @Module({
   imports: [
     PassportModule.register({ session: true }),
-    MikroOrmModule.forFeature([UserEntity]),
+    MikroOrmModule.forFeature([UserEntity, UserDeviceEntity]),
     MailsModule,
   ],
   providers: [
