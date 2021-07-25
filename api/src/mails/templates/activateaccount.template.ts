@@ -1,7 +1,7 @@
 import { MailTemplate } from '../mailtemplate'
 
 export class ActivateAccountTemplate extends MailTemplate {
-  templateId = 'd-1900502630f64615931370349c16a493'
+  templateId = 'd-47ca934cf01d4699ba6e577d5854ff5c'
 
   constructor(
     subject: string,

@@ -1,38 +1,75 @@
 import cntl from "cntl";
-import { createElement, ReactNode } from "react";
+import { createElement, forwardRef, ReactNode } from "react";
+import { Link } from "react-router-dom";
 
 interface ButtonProps {
   children: ReactNode,
   tag?: string | 'a' | 'button';
+  text?: boolean;
   loading?: boolean;
   disabled?: boolean;
+  block?: boolean;
+  to?: string;
 }
 
-const buttonCN = ({ loading, disabled }: { loading?: boolean; disabled?: boolean }) => cntl`
+const buttonCN = ({ loading, disabled, text, block }: { loading?: boolean; disabled?: boolean, text?: boolean, block?: boolean }) => cntl`
   app-button
-  text-white
   font-bold
   py-2
   px-4
-  rounded-lg
-  shadow-lg
+  text-center
+
+  ${block && 'w-full block'}
+  
+  
+  
   focus:outline-none
   focus:shadow-outline
-  
-  ${loading && `app-button--loading`}
-
-  ${disabled  || loading
+  ${text
     ? cntl`
-        bg-gray-300
-        pointer-events-none
+        hover:bg-gray-300
+        rounded-lg
+
+        ${disabled
+          ? cntl`
+              text-gray-50
+              pointer-events-none
+              cursor-not-allowed
+            `
+          : cntl`
+            hover:bg-gray-50
+            `
+        }
       `
     : cntl`
-      bg-primary-500
-      hover:bg-primary-700
-    `
+      text-white
+        rounded-lg
+        shadow-lg
+        ${loading && `app-button--loading`}
+
+        ${disabled || loading
+          ? cntl`
+              bg-gray-300
+              pointer-events-none
+              cursor-not-allowed
+            `
+          : cntl`
+              bg-primary-500
+              hover:bg-primary-700
+            `
+        }
+      `
   }
+
+  
 `;
 
-export function Button({ children, tag = 'button', loading, disabled, ...others }: ButtonProps) {
-  return createElement(tag, { className: buttonCN({ loading, disabled }), ...others }, children);
-}
+export const Button = forwardRef<HTMLElement, ButtonProps>(({ children, tag = 'button', text, loading, disabled, block, to, ...others }: ButtonProps, ref) => 
+  createElement(
+    to ? 'div' : tag, 
+    { className: buttonCN({ loading, disabled, text, block }), ref, ...others }, 
+    to 
+      ? <Link to={to}>{children}</Link> 
+      : children
+  )
+);

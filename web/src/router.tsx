@@ -8,12 +8,14 @@ import {
   useHistory,
   useLocation,
 } from "react-router-dom";
+import { Activate } from "./components/auth/Activate";
 import { SignIn } from "./components/auth/SignIn";
 import { SignUp } from "./components/auth/SignUp";
 import { NotFound } from "./components/errors/NotFound";
 import { Home } from "./components/home/Home";
 import { AuthLayout } from "./components/layouts/AuthLayout";
 import { MainLayout } from "./components/layouts/MainLayout";
+import { useSession } from "./hooks/session";
 
 export interface RouterLocationState {
   is404?: boolean;
@@ -48,32 +50,19 @@ const SessionRoute = ({
   loggedFallback,
   ...props
 }: PrivateRouteProps) => {
-  const { isLoggedIn } = { isLoggedIn: false };
-
-  // TODO: may need to be cleanned up idk ....
+  const { isLoggedIn, hasDevice } = useSession();
 
   return (
     <Route
       {...props}
-      render={({ location }) =>
-        // eslint-disable-next-line no-nested-ternary
-        loggedFallback || isLoggedIn ? (
-          loggedFallback && isLoggedIn ? (
-            <Redirect
-              to={{
-                pathname: loggedFallback,
-              }}
-            />
-          ) : (
-            children
-          )
-        ) : (
-          <Redirect
-            to={{
-              pathname: "/auth/sign-in",
-              state: { fallback: location },
-            }}
-          />
+      render={
+        ({ location }) => (
+          <>
+            {!isLoggedIn && !loggedFallback && <Redirect to={{ pathname: '/auth/sign-in', state: { fallback: location } }}/>}
+            {isLoggedIn && !hasDevice && !loggedFallback && <Redirect to={{ pathname: '/auth/device', state: { fallback: location } }}/>}
+            {isLoggedIn && loggedFallback && <Redirect to={loggedFallback}/>}
+            {children}
+          </>
         )
       }
     />
@@ -88,8 +77,10 @@ const AllRoutes = () => (
         <Switch>
           <Route path="/auth/sign-in" component={SignIn} />
           <Route path="/auth/sign-up" component={SignUp} />
-          {/* <Route path="/auth/activate/:token" component={Activate} />
-          <Route
+          <Route path="/auth/activate/:validationCode" component={Activate} />
+          <Route path="/auth/activate" component={Activate} />
+          <Route path="/auth/device" component={() => <div>HEY</div>} />
+          {/* <Route
             path="/auth/reset-password/:token?"
             component={ResetPassword}
           /> */}

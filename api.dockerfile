@@ -9,6 +9,8 @@ COPY ./api ./api
 COPY ./common ./common
 
 RUN yarn install --frozen-lockfile
+RUN yarn run build-common
+RUN yarn install --frozen-lockfile
 
 WORKDIR /app/api
 

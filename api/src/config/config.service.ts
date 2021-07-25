@@ -63,12 +63,20 @@ class ConfigService {
           playground: false,
           autoSchemaFile: path.join(__dirname, '../schema.gql'),
           installSubscriptionHandlers: true,
+          cors: {
+            origin: true,
+            credentials: true,
+          },
         }
       : {
           debug: true,
           playground: true,
           autoSchemaFile: path.join(__dirname, '../schema.gql'),
           installSubscriptionHandlers: true,
+          cors: {
+            origin: true,
+            credentials: true,
+          },
         }
   }
 

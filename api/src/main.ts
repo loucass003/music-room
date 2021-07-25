@@ -7,7 +7,7 @@ import passport from 'passport'
 import { ValidationPipe } from '@nestjs/common'
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule)
+  const app = await NestFactory.create(AppModule, { cors: true })
   app.use(cookieParser())
   app.use(cookieSession({ secret: configService.getCookieSecret() }))
   app.use(passport.initialize())

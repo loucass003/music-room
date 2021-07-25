@@ -4,12 +4,13 @@ import { useForm } from "react-hook-form";
 import { useRegisterMutation } from "../../graphql/generated-types";
 import { Input } from "../commons/ui/Input";
 import { Button } from "../commons/ui/Button";
+import { useHistory } from "react-router-dom";
 
 
 
 export function SignUp() {
   const [registerMutation, { loading }] = useRegisterMutation();
-
+  const history = useHistory()
   const {
     register,
     handleSubmit,
@@ -18,9 +19,11 @@ export function SignUp() {
     resolver: classValidatorResolver(RegisterForm),
   })
   const onSubmit = async (variables: RegisterForm) => {
-    const { data, errors } = await registerMutation({ variables })
-    console.log(errors && errors[0].message, errors)
-    console.log(data);
+    const { data } = await registerMutation({ variables });
+
+    if (data && data.register) {
+      history.push('/auth/activate');
+    }
   }
 
   return (
@@ -57,8 +60,9 @@ export function SignUp() {
             </li>
           </ul>
         </div>
-        <div className="pt-6 text-base leading-6 font-bold sm:text-lg sm:leading-7">
+        <div className="pt-6 text-base leading-6 font-bold sm:text-lg sm:leading-7 flex gap-3 flex-col">
           <Button loading={loading}>Submit</Button>
+          <Button to="/auth/sign-in" text>I already have an account</Button>
         </div>
       </div>
     </form>
