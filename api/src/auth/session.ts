@@ -12,14 +12,18 @@ registerEnumType(LoginStrategy, {
 @ObjectType()
 export class UserSession {
   @Field(() => ID)
-  public id!: number
+  public id!: string
 
   @Field({ nullable: true })
   public deviceName?: string
 
   @Field(() => ID, { nullable: true })
-  public deviceId?: number
+  public deviceId?: string
 
   @Field(() => LoginStrategy)
   public loginStrategy!: LoginStrategy
+}
+
+export interface AuthorizedCtx {
+  req: { user?: UserSession }
 }

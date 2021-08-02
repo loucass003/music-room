@@ -1,27 +1,26 @@
-import { EntityRepository } from '@mikro-orm/core'
-import { InjectRepository } from '@mikro-orm/nestjs'
 import { UseGuards } from '@nestjs/common'
-import { Args, Context, Info, Mutation, Query, Resolver } from '@nestjs/graphql'
+import { InjectQueryService, QueryService } from '@nestjs-query/core'
+import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql'
 import { configService } from 'src/config/config.service'
-import { UserEntity } from 'src/entities/user.entity'
 import { AuthGuard } from './auth.guard'
 import { AuthService } from './auth.service'
 import { CurrentSession } from './currentsession.decorator'
 import { LocalLoginGuard } from './local/locallogin.guard'
 import { UserSession } from './session'
 import { RegisterDto } from './dto/register.dto'
-import { GraphQLResolveInfo } from 'graphql'
-import fieldsToRelations from 'graphql-fields-to-relations'
 import { promisify } from 'util'
-import { UserDeviceEntity } from 'src/entities/userdevice.entity'
+import { UserEntity } from 'src/user/entity/user.entity'
+import { UserDeviceEntity } from 'src/user/entity/userdevice.entity'
+import { UserDto } from 'src/user/dto/user.dto'
+import { UserDeviceDto } from 'src/user/dto/userdevice.dto'
 
 @Resolver()
 export class AuthResolver {
   constructor(
-    @InjectRepository(UserEntity)
-    private readonly userRepository: EntityRepository<UserEntity>,
-    @InjectRepository(UserDeviceEntity)
-    private readonly deviceRepository: EntityRepository<UserDeviceEntity>,
+    @InjectQueryService(UserEntity)
+    private readonly userService: QueryService<UserEntity>,
+    @InjectQueryService(UserDeviceEntity)
+    private readonly userDeviceService: QueryService<UserDeviceEntity>,
     private readonly authService: AuthService,
   ) {}
 
@@ -36,28 +35,16 @@ export class AuthResolver {
     return true
   }
 
-  @Query(() => UserEntity)
+  @Query(() => UserDto)
   @UseGuards(new AuthGuard({ deviceMustBeLogged: false }))
-  async me(
-    @CurrentSession() session: UserSession,
-    @Info() info: GraphQLResolveInfo,
-  ) {
-    return this.userRepository.findOneOrFail(
-      session.id,
-      fieldsToRelations(info),
-    )
+  async me(@CurrentSession() session: UserSession) {
+    return this.userService.findById(session.id)
   }
 
-  @Query(() => UserDeviceEntity)
+  @Query(() => UserDeviceDto)
   @UseGuards(new AuthGuard())
-  async currentDevice(
-    @CurrentSession() session: UserSession,
-    @Info() info: GraphQLResolveInfo,
-  ) {
-    return this.deviceRepository.findOneOrFail(
-      session.deviceId!,
-      fieldsToRelations(info),
-    )
+  async currentDevice(@CurrentSession() session: UserSession) {
+    return this.userDeviceService.findById(session.deviceId!)
   }
 
   @Mutation(() => Boolean)

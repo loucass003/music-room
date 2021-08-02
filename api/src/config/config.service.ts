@@ -1,5 +1,5 @@
-import { MikroOrmModuleOptions } from '@mikro-orm/nestjs'
 import { GqlModuleOptions as OGqlModuleOptions } from '@nestjs/graphql'
+import { TypeOrmModuleOptions } from '@nestjs/typeorm'
 import * as path from 'path'
 import * as dotenv from 'dotenv'
 
@@ -39,20 +39,24 @@ class ConfigService {
     return mode === 'PRODUCTION'
   }
 
-  public getMikroOrmConfig(): MikroOrmModuleOptions {
+  public getTypeOrmConfig(): TypeOrmModuleOptions {
     return {
-      entities: [path.join(__dirname, '../entities')],
-      entitiesTs: [path.join(__dirname, '../entities')],
-      type: 'postgresql',
-      baseDir: path.join(__dirname, '../..'),
+      type: 'postgres',
+
       host: this.getValue('POSTGRES_HOST'),
       port: parseInt(this.getValue('POSTGRES_PORT')),
-      user: this.getValue('POSTGRES_USER'),
+      username: this.getValue('POSTGRES_USER'),
       password: this.getValue('POSTGRES_PASSWORD'),
-      dbName: this.getValue('POSTGRES_DATABASE'),
-      migrations: {
-        path: path.join(__dirname, '../migrations'),
+      database: this.getValue('POSTGRES_DATABASE'),
+
+      migrationsTableName: 'migration',
+
+      entities: ['dist/**/*.entity.js'],
+      migrations: ['dist/migrations/*.js'],
+      cli: {
+        migrationsDir: 'dist/migrations',
       },
+      logging: this.isProduction() ? false : 'all',
     }
   }
 

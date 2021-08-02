@@ -1,23 +1,37 @@
-import { MikroOrmModule } from '@mikro-orm/nestjs'
+import {
+  NestjsQueryGraphQLModule,
+  pubSubToken,
+} from '@nestjs-query/query-graphql'
+import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm'
 import { Module } from '@nestjs/common'
-import { PlaylistEntity } from 'src/entities/playlist.entity'
-import { PlaylistUserEntity } from 'src/entities/playlistuser.entity'
-import { UserDeviceEntity } from 'src/entities/userdevice.entity'
-import { PlaylistResolver } from './playlist.resolver'
 import { PubSub } from 'graphql-subscriptions'
-import { PlaylistEntryResolver } from './playlistentry.resolver'
+import { AuthModule } from 'src/auth/auth.module'
+import { UserDeviceEntity } from 'src/user/entity/userdevice.entity'
+import { PlaylistDto } from './dto/playlist.dto'
+import { PlaylistUserDto } from './dto/playlistuser.dto'
+import { PlaylistEntity } from './entity/playlist.entity'
+import { PlaylistUserEntity } from './entity/playlistuser.entity'
+import { PlaylistService } from './playlist.service'
+import { PlaylistResolver } from './resolver/playlist.resolver'
+import { PlaylistUserResolver } from './resolver/playlistentry.resolver'
 
 @Module({
   imports: [
-    MikroOrmModule.forFeature([
-      PlaylistEntity,
-      PlaylistUserEntity,
-      UserDeviceEntity,
-    ]),
+    NestjsQueryGraphQLModule.forFeature({
+      imports: [
+        NestjsQueryTypeOrmModule.forFeature([
+          PlaylistEntity,
+          PlaylistUserEntity,
+          UserDeviceEntity,
+        ]),
+      ],
+      dtos: [{ DTOClass: PlaylistUserDto }, { DTOClass: PlaylistDto }],
+    }),
   ],
   providers: [
+    PlaylistService,
     PlaylistResolver,
-    PlaylistEntryResolver,
+    PlaylistUserResolver,
     {
       provide: 'PUB_SUB',
       useValue: new PubSub(),

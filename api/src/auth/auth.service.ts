@@ -1,30 +1,26 @@
-import {
-  EntityRepository,
-  UniqueConstraintViolationException,
-} from '@mikro-orm/core'
-import { InjectRepository } from '@mikro-orm/nestjs'
-import { UserEntity } from 'src/entities/user.entity'
 import * as argon2 from 'argon2'
 import { RegisterDto } from './dto/register.dto'
 import {
   BadRequestException,
   Injectable,
   NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common'
-import { MailsService } from 'src/mails/mails.service'
 import crypto from 'crypto'
 import { ActivateAccountTemplate } from 'src/mails/templates/activateaccount.template'
 import { configService } from 'src/config/config.service'
-import { UserDeviceEntity } from 'src/entities/userdevice.entity'
+import { InjectRepository } from '@nestjs/typeorm'
+import { UserEntity } from 'src/user/entity/user.entity'
+import { MailsService } from 'src/mails/mails.service'
+import { UserDeviceEntity } from 'src/user/entity/userdevice.entity'
+import { QueryFailedError, Repository } from 'typeorm'
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(UserEntity)
-    private readonly userRepository: EntityRepository<UserEntity>,
+    private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(UserDeviceEntity)
-    private readonly deviceRepository: EntityRepository<UserDeviceEntity>,
+    private readonly deviceRepository: Repository<UserDeviceEntity>,
     private readonly mailsService: MailsService,
   ) {}
 
@@ -51,9 +47,9 @@ export class AuthService {
     })
     this.createValidationCode(user)
     try {
-      await this.userRepository.persistAndFlush(user)
+      await this.userRepository.save(user)
     } catch (e) {
-      if (e instanceof UniqueConstraintViolationException) {
+      if (e instanceof QueryFailedError) {
         if ((e as any).constraint === UserEntity.NAME_UNIQUE_CONSTRAINT) {
           throw new BadRequestException('name already taken')
         } else if (
@@ -102,9 +98,9 @@ export class AuthService {
         emailValidated: true,
       })
       try {
-        await this.userRepository.persistAndFlush(user)
+        await this.userRepository.save(user)
       } catch (e) {
-        if (e instanceof UniqueConstraintViolationException) {
+        if (e instanceof QueryFailedError) {
           if ((e as any).constraint === UserEntity.NAME_UNIQUE_CONSTRAINT) {
             throw new BadRequestException('name already taken')
           } else if (
@@ -127,18 +123,18 @@ export class AuthService {
     if (!user) throw new NotFoundException('cannot find account')
     user.validationCode = undefined
     user.emailValidated = true
-    await this.userRepository.persistAndFlush(user)
+    await this.userRepository.save(user)
   }
 
   // devices
 
   async verifyDevice(
-    user: number,
+    user: string,
     deviceName: string,
     deviceSecret: string,
   ): Promise<UserDeviceEntity> {
     const device = await this.deviceRepository.findOne({
-      user,
+      user: { id: user },
       name: deviceName,
     })
 
@@ -151,20 +147,20 @@ export class AuthService {
   }
 
   async createDevice(
-    user: number,
+    user: string,
     deviceName: string,
     deviceSecret: string,
   ): Promise<UserDeviceEntity> {
     const device = this.deviceRepository.create({
-      user,
+      user: { id: user },
       name: deviceName,
       secret: await argon2.hash(deviceSecret),
     })
 
     try {
-      await this.deviceRepository.persistAndFlush(device)
+      await this.deviceRepository.save(device)
     } catch (e) {
-      if (e instanceof UniqueConstraintViolationException) {
+      if (e instanceof QueryFailedError) {
         if (
           (e as any).constraint === UserDeviceEntity.USER_NAME_UNIQUE_CONSTRAINT
         ) {

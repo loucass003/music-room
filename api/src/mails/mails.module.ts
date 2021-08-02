@@ -1,4 +1,3 @@
-import { MikroOrmModule } from '@mikro-orm/nestjs'
 import { Module } from '@nestjs/common'
 import { MailsService } from './mails.service'
 

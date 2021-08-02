@@ -1,4 +1,4 @@
-import { Field, InputType, PartialType } from '@nestjs/graphql'
+import { Field, InputType, OmitType, PartialType } from '@nestjs/graphql'
 import { Matches, MaxLength } from 'class-validator'
 
 export class CreatePlaylistForm {
@@ -28,4 +28,7 @@ export class CreatePlaylistDto extends CreatePlaylistForm {
 }
 
 @InputType()
-export class UpdatePlaylistDto extends PartialType(CreatePlaylistDto) {}
+export class UpdatePlaylistDto extends OmitType(
+  PartialType(CreatePlaylistDto),
+  ['name'],
+) {}
