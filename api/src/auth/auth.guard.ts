@@ -1,4 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common'
 import { GqlExecutionContext } from '@nestjs/graphql'
 import { UserSession } from './session'
 
@@ -17,7 +22,11 @@ export class AuthGuard implements CanActivate {
     request.body = ctx.getArgs()
     request.user = request.req.user
     const session: UserSession | undefined = request.req.user
-    if (this.options.deviceMustBeLogged && !session?.deviceName) return false
-    return request.req.isAuthenticated()
+    if (!request.req.isAuthenticated())
+      throw new UnauthorizedException('You must be logged in')
+    if (!(this.options.deviceMustBeLogged && !session?.deviceName))
+      throw new UnauthorizedException('Your device must be logged in')
+
+    return true
   }
 }
