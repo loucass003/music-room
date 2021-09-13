@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@apollo/gateway": "^0.33.0",
-    "@music-room/common": "./common",
+    "@music-room/common": "0.0.1",
     "@nestjs-query/query-graphql": "^0.28.0",
     "@nestjs-query/query-typeorm": "^0.28.0",
     "@nestjs/common": "^7.5.1",
