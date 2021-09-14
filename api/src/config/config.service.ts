@@ -114,6 +114,10 @@ class ConfigService {
   public getAccountActivationUrl(): string {
     return this.getValue('ACCOUNT_ACTIVATION_URL')
   }
+
+  public getPasswordResetUrl(): string {
+    return this.getValue('PASSWORD_RESET_URL')
+  }
 }
 
 const configService = new ConfigService(process.env).ensureValues([

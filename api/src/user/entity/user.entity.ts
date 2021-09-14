@@ -33,6 +33,14 @@ export class UserEntity extends BaseEntity {
   @Index()
   validationCode?: string
 
+  @Column({ nullable: true })
+  @Index()
+  resetToken?: string
+
+  @Column({ nullable: true })
+  @Index()
+  resetTokenExpire?: Date
+
   get hasPassword(): boolean {
     return this.password !== null
   }

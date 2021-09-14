@@ -13,6 +13,7 @@ import { UserEntity } from 'src/user/entity/user.entity'
 import { MailsService } from 'src/mails/mails.service'
 import { UserDeviceEntity } from 'src/user/entity/userdevice.entity'
 import { QueryFailedError, Repository } from 'typeorm'
+import { ResetPasswordTemplate } from 'src/mails/templates/resetpassword.template'
 
 @Injectable()
 export class AuthService {
@@ -45,7 +46,7 @@ export class AuthService {
       name: data.name,
       password: await argon2.hash(data.password),
     })
-    this.createValidationCode(user)
+    user.validationCode = this.createValidationCode()
     try {
       await this.userRepository.save(user)
     } catch (e) {
@@ -68,16 +69,15 @@ export class AuthService {
         user.name,
         configService
           .getAccountActivationUrl()
-          .replace('{}', user.validationCode!),
+          .replace('{}', user.validationCode),
       ),
       user.email,
     )
     return user
   }
 
-  createValidationCode(user: UserEntity) {
-    const validationCode = crypto.randomBytes(16).toString('hex')
-    user.validationCode = validationCode
+  createValidationCode(): string {
+    return crypto.randomBytes(16).toString('hex')
   }
 
   async loginUserWithGoogle(
@@ -172,5 +172,55 @@ export class AuthService {
     }
 
     return device
+  }
+
+  async sendResetPassword(email: string): Promise<boolean> {
+    const user = await this.userRepository.findOne({ email })
+
+    if (!user) throw new NotFoundException('no user found with this email')
+
+    user.resetToken = this.createValidationCode()
+    const expireDate = new Date()
+    expireDate.setTime(Date.now() + 1000 * 60 * 60) // Set the token to expire in one hour
+    user.resetTokenExpire = expireDate
+    await this.userRepository.save(user)
+
+    this.mailsService.sendMail(
+      new ResetPasswordTemplate(
+        'Reset your password',
+        user.name,
+        configService
+          .getPasswordResetUrl()
+          .replace('{id}', user.id)
+          .replace('{token}', user.resetToken),
+      ),
+      user.email,
+    )
+
+    return true
+  }
+
+  async resetPassword(
+    token: string,
+    userId: string,
+    password: string,
+  ): Promise<boolean> {
+    const user = await this.userRepository.findOne({
+      id: userId,
+      resetToken: token,
+    })
+
+    if (!user) throw new BadRequestException('invalid reset token')
+    if (user.resetTokenExpire && user.resetTokenExpire.getTime() < Date.now())
+      throw new BadRequestException('reset token expired')
+
+    delete user.resetToken
+    delete user.resetTokenExpire
+
+    user.password = await argon2.hash(password)
+
+    await this.userRepository.save(user)
+
+    return true
   }
 }

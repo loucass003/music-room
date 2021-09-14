@@ -70,6 +70,20 @@ export class AuthResolver {
   }
 
   @Mutation(() => Boolean)
+  async sendResetPassword(@Args('email') email: string): Promise<boolean> {
+    return this.authService.sendResetPassword(email)
+  }
+
+  @Mutation(() => Boolean)
+  async resetPassword(
+    @Args('token') token: string,
+    @Args('id') id: string,
+    @Args('password') password: string,
+  ): Promise<boolean> {
+    return this.authService.resetPassword(token, id, password)
+  }
+
+  @Mutation(() => Boolean)
   async activateAccount(
     @Args('validationCode') validationCode: string,
   ): Promise<boolean> {
