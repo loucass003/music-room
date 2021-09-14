@@ -3,11 +3,9 @@ import { onError } from "@apollo/client/link/error";
 import { useMemo } from "react";
 import { ReactNode } from "react";
 import { useToasts } from "react-toast-notifications";
-import { useSession } from "../hooks/session";
 
 export function GraphqlProvider({ children }: { children: ReactNode }) {
   const { addToast } = useToasts();
-  // const { logout } = useSession();
 
   const client = useMemo(() => {
     const httpLink = new HttpLink({
@@ -20,7 +18,6 @@ export function GraphqlProvider({ children }: { children: ReactNode }) {
         graphQLErrors.forEach(({ message, locations, path, extensions }) => {
           if (extensions && extensions.code) {
             if (extensions.code === 'FORBIDDEN') {
-              //logout();
             }
           }
           const msg = `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`;

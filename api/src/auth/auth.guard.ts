@@ -24,7 +24,7 @@ export class AuthGuard implements CanActivate {
     const session: UserSession | undefined = request.req.user
     if (!request.req.isAuthenticated())
       throw new UnauthorizedException('You must be logged in')
-    if (!(this.options.deviceMustBeLogged && !session?.deviceName))
+    if (this.options.deviceMustBeLogged && !session?.deviceName)
       throw new UnauthorizedException('Your device must be logged in')
 
     return true

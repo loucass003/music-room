@@ -1,20 +1,21 @@
 import { useForm } from "react-hook-form";
-import { useHistory } from "react-router-dom";
-import { Input } from "../commons/ui/Input";
-import { Button } from "../commons/ui/Button";
+import { Link, useHistory } from "react-router-dom";
+import { Input } from "../../commons/ui/Input";
+import { Button } from "../../commons/ui/Button";
 import { LoginForm } from "@music-room/common";
 import { classValidatorResolver } from "@hookform/resolvers/class-validator";
-import { useFallbackRouter } from "../../router";
-import { useLoginMutation } from "../../graphql/generated-types";
+import { useFallbackRouter } from "../../../router";
+import { useLoginMutation } from "../../../graphql/generated-types";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGoogle } from '@fortawesome/free-brands-svg-icons'
-import { useSession } from "../../hooks/session";
+import { useSession } from "../../../hooks/session";
+import { useEffect } from "react";
 
 
 export function SignIn() {
-  const [loginMutation, { loading }] = useLoginMutation();
+  const [loginMutation, { loading: loginLoading }] = useLoginMutation();
   const history = useHistory()
-  const { updateSession } = useSession();
+  const { updateSession, hasDevice, loading, isLoggedIn } = useSession();
   const { fallback, hasFallbackRoute } = useFallbackRouter();
   const {
     register,
@@ -25,13 +26,18 @@ export function SignIn() {
   })
   const onSubmit = async (variables: LoginForm) => {
     const { data } = await loginMutation({ variables });
-    console.log(data)
     if (data && data.login) {
       updateSession()
-      // if (hasFallbackRoute) fallback();
-      // else history.push('/')
     }
   }
+
+useEffect(() => {
+    if (!loginLoading && !loading && isLoggedIn) {
+      if (hasFallbackRoute && hasDevice) fallback();
+      else history.push('/')
+    }
+  }, [loading, loginLoading, isLoggedIn, hasDevice, history, hasFallbackRoute, fallback])
+
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="md:w-72">
@@ -50,13 +56,16 @@ export function SignIn() {
                 label="Password"
               ></Input>
             </li>
+            <li className="flex items-end flex-col">
+              <Link to="/auth/reset-password" className="hover:text-black text-sm">Foggot password?</Link>
+            </li>
           </ul>
         </div>
         <div className="divide-y divide-gray-200 w-full py-3 flex flex-col">
           <Button><FontAwesomeIcon icon={faGoogle} className="mr-3"/>Google Account</Button>
         </div>
         <div className="pt-6 text-base leading-6 font-bold sm:text-lg sm:leading-7 flex gap-3 flex-col">
-          <Button loading={loading}>Submit</Button>
+          <Button loading={loginLoading && loading}>Submit</Button>
           <Button to="/auth/sign-up" text>Create my account</Button>
         </div>
       </div>

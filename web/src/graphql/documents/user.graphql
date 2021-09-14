@@ -25,3 +25,11 @@ mutation login($email: String!, $password: String!) {
 mutation setDevice($deviceName: String!, $deviceSecret: String!) {
   setDevice(deviceName: $deviceName, deviceSecret: $deviceSecret)
 }
+
+mutation logout {
+  logout
+}
+
+mutation createDevice($deviceName: String!, $deviceSecret: String!) {
+  createDevice(deviceName: $deviceName, deviceSecret: $deviceSecret)
+}

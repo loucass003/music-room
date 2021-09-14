@@ -10,6 +10,7 @@ interface ButtonProps {
   disabled?: boolean;
   block?: boolean;
   to?: string;
+  onClick?: () => void;
 }
 
 const buttonCN = ({ loading, disabled, text, block }: { loading?: boolean; disabled?: boolean, text?: boolean, block?: boolean }) => cntl`
@@ -64,12 +65,12 @@ const buttonCN = ({ loading, disabled, text, block }: { loading?: boolean; disab
   
 `;
 
-export const Button = forwardRef<HTMLElement, ButtonProps>(({ children, tag = 'button', text, loading, disabled, block, to, ...others }: ButtonProps, ref) => 
-  createElement(
+export const Button = forwardRef<HTMLElement, ButtonProps>(({ children, tag = 'button', text, loading, disabled, block, to, ...others }: ButtonProps, ref) => {
+  const cmp = createElement(
     to ? 'div' : tag, 
     { className: buttonCN({ loading, disabled, text, block }), ref, ...others }, 
-    to 
-      ? <Link to={to}>{children}</Link> 
-      : children
+    children
   )
-);
+  
+  return to ? <Link to={to}>{cmp}</Link> : cmp; 
+});

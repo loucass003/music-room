@@ -8,14 +8,17 @@ import {
   useHistory,
   useLocation,
 } from "react-router-dom";
-import { Activate } from "./components/auth/Activate";
-import { SignIn } from "./components/auth/SignIn";
-import { SignUp } from "./components/auth/SignUp";
+import { Activate } from "./components/routes/auth/Activate";
+import { Device } from "./components/routes/auth/Device";
+import { SignIn } from "./components/routes/auth/SignIn";
+import { SignUp } from "./components/routes/auth/SignUp";
 import { NotFound } from "./components/errors/NotFound";
-import { Home } from "./components/home/Home";
+import { Home } from "./components/routes/home/Home";
 import { AuthLayout } from "./components/layouts/AuthLayout";
 import { MainLayout } from "./components/layouts/MainLayout";
 import { useSession } from "./hooks/session";
+import { Settings } from "./components/routes/settings/Settings";
+import { ResetPassword } from "./components/routes/auth/ResetPassword";
 
 export interface RouterLocationState {
   is404?: boolean;
@@ -51,6 +54,7 @@ const SessionRoute = ({
   ...props
 }: PrivateRouteProps) => {
   const { isLoggedIn, hasDevice } = useSession();
+  const currLocal = useLocation<RouterLocationState>();
 
   return (
     <Route
@@ -58,9 +62,9 @@ const SessionRoute = ({
       render={
         ({ location }) => (
           <>
-            {!isLoggedIn && !loggedFallback && <Redirect to={{ pathname: '/auth/sign-in', state: { fallback: location } }}/>}
-            {isLoggedIn && !hasDevice && !loggedFallback && <Redirect to={{ pathname: '/auth/device', state: { fallback: location } }}/>}
-            {isLoggedIn && loggedFallback && <Redirect to={loggedFallback}/>}
+            {!isLoggedIn && !hasDevice && !currLocal.pathname.startsWith(props.path) && <Redirect to={{ pathname: '/auth/sign-in', state: { fallback: location } }}/>}
+            {isLoggedIn && !hasDevice && !currLocal.pathname.startsWith(props.path) && <Redirect to={{ pathname: '/auth/device', state: { fallback: location } }}/>}
+            {isLoggedIn && hasDevice && loggedFallback && <Redirect to={loggedFallback}/>}
             {children}
           </>
         )
@@ -79,7 +83,9 @@ const AllRoutes = () => (
           <Route path="/auth/sign-up" component={SignUp} />
           <Route path="/auth/activate/:validationCode" component={Activate} />
           <Route path="/auth/activate" component={Activate} />
-          <Route path="/auth/device" component={() => <div>HEY</div>} />
+          <Route path="/auth/reset-password/:token" component={ResetPassword} />
+          <Route path="/auth/reset-password" component={ResetPassword} />
+          <Route path="/auth/device" component={Device} />
           {/* <Route
             path="/auth/reset-password/:token?"
             component={ResetPassword}
@@ -93,6 +99,7 @@ const AllRoutes = () => (
       <MainLayout>
         <Switch>
           <Route path="/" exact component={Home} />
+          <Route path="/settings" component={Settings} />
           <Route component={RedirectAs404} />
         </Switch>
       </MainLayout>

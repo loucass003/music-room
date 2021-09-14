@@ -1,9 +1,9 @@
 import { classValidatorResolver } from "@hookform/resolvers/class-validator";
 import { RegisterForm } from "@music-room/common";
 import { useForm } from "react-hook-form";
-import { useRegisterMutation } from "../../graphql/generated-types";
-import { Input } from "../commons/ui/Input";
-import { Button } from "../commons/ui/Button";
+import { useRegisterMutation } from "../../../graphql/generated-types";
+import { Input } from "../../commons/ui/Input";
+import { Button } from "../../commons/ui/Button";
 import { useHistory } from "react-router-dom";
 
 

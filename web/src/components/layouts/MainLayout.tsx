@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { Navbar } from "../commons/Navbar";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -7,8 +8,8 @@ interface MainLayoutProps {
 export function MainLayout({ children }: MainLayoutProps) {
   return (
     <div>
-      MAIN LAYOUT
-      <div>{children}</div>
+      <Navbar></Navbar>
+      <div className="container mx-4">{children}</div>
     </div>
   );
 }

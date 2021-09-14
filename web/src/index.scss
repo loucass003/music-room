@@ -2,4 +2,8 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
-@import './styles/button.scss'
+@import './styles/button.scss';
+
+body {
+    background-color: rgb(235, 235, 235);
+}

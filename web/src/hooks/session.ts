@@ -1,5 +1,5 @@
 import { createContext, Reducer, useContext, useEffect, useReducer } from "react";
-import { SessionQuery, useSessionLazyQuery, useSetDeviceMutation } from "../graphql/generated-types";
+import { SessionQuery, useCreateDeviceMutation, useLoginMutation, useLogoutMutation, useSessionLazyQuery, useSetDeviceMutation } from "../graphql/generated-types";
 import { v4 as uuidv4 } from 'uuid';
 
 
@@ -63,9 +63,10 @@ export function useProvideSession(): Session {
   );
 
   const [setDevice] = useSetDeviceMutation();
+  const [createDevice] = useCreateDeviceMutation();
+  const [logoutMutation] = useLogoutMutation();
 
   const meCompleted = async (data: SessionQuery) => {
-    console.log('completed')
     dispatch({ type: 'session', session: data })
     if (!data.session?.deviceId) {
       const deviceLocalstr = localStorage.getItem('MUSIC_ROOM_DEVICE_LOCAL');
@@ -82,7 +83,7 @@ export function useProvideSession(): Session {
     }
     dispatch({ type: 'loading', loading: false })
   };
-  const [querySession] = useSessionLazyQuery({ onCompleted: meCompleted });
+  const [querySession] = useSessionLazyQuery({ onCompleted: meCompleted, fetchPolicy: 'network-only' });
 
   useEffect(() => {
     querySession()
@@ -92,16 +93,27 @@ export function useProvideSession(): Session {
   return {
     session: state,
     updateSession: () => querySession(),
-    createDevice: (name: string) => {
+    createDevice: async (name: string) => {
       const device: DeviceLocal = {
         deviceName: name,
         deviceSecret: uuidv4()
       };
-      localStorage.setItem('MUSIC_ROOM_DEVICE_LOCAL', JSON.stringify(device));
       dispatch({ type: 'loading', loading: true })
-      querySession()
+      const { data, errors } = await createDevice({ variables: device });
+      if (data?.createDevice) {
+        localStorage.setItem('MUSIC_ROOM_DEVICE_LOCAL', JSON.stringify(device));
+        querySession()
+      }
+
+      if (errors) {
+        dispatch({ type: 'loading', loading: false })
+      }
     },
-    logout: () => dispatch({ type: 'session', session: undefined }),
+    logout: async () => {
+      const { data } = await logoutMutation();
+      if (data?.logout)
+        dispatch({ type: 'session', session: undefined })
+    },
     isLoggedIn: !!state.session?.me,
     hasDevice: !!state.session?.me && !!state.session.session?.deviceId,
     loading: state.loading,
