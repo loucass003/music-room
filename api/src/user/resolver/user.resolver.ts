@@ -1,6 +1,7 @@
 import { QueryService, InjectQueryService } from '@nestjs-query/core'
 import { CRUDResolver } from '@nestjs-query/query-graphql'
 import { Resolver } from '@nestjs/graphql'
+import { ConversationService } from 'src/chat/conversation.service'
 import { UserDto } from '../dto/user.dto'
 import { UserEntity } from '../entity/user.entity'
 

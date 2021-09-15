@@ -13,6 +13,7 @@ import { UserEntity } from 'src/user/entity/user.entity'
 import { UserDeviceEntity } from 'src/user/entity/userdevice.entity'
 import { UserDto } from 'src/user/dto/user.dto'
 import { UserDeviceDto } from 'src/user/dto/userdevice.dto'
+import { ResetPasswordDto } from './dto/reset-password.dto'
 
 @Resolver()
 export class AuthResolver {
@@ -63,6 +64,14 @@ export class AuthResolver {
     return session
   }
 
+  @Query(() => Boolean)
+  async verifyResetPasswordToken(
+    @Args('id') id: string,
+    @Args('token') token: string,
+  ): Promise<boolean> {
+    return !!(await this.authService.verifyResetToken(id, token))
+  }
+
   @Mutation(() => Boolean)
   logout(@Context() context: any): boolean {
     context.req.logOut()
@@ -75,12 +84,8 @@ export class AuthResolver {
   }
 
   @Mutation(() => Boolean)
-  async resetPassword(
-    @Args('token') token: string,
-    @Args('id') id: string,
-    @Args('password') password: string,
-  ): Promise<boolean> {
-    return this.authService.resetPassword(token, id, password)
+  async resetPassword(@Args('data') data: ResetPasswordDto): Promise<boolean> {
+    return this.authService.resetPassword(data)
   }
 
   @Mutation(() => Boolean)

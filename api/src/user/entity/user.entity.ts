@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-inferrable-types */
+import { ConversationEntity } from 'src/chat/entity/conversation.entity'
 import { Column, Entity, Index, OneToMany, Unique } from 'typeorm'
 import { BaseEntity } from '../../base.entity'
 import { UserDeviceEntity } from './userdevice.entity'
@@ -33,13 +34,13 @@ export class UserEntity extends BaseEntity {
   @Index()
   validationCode?: string
 
-  @Column({ nullable: true })
+  @Column('varchar', { nullable: true })
   @Index()
-  resetToken?: string
+  resetToken?: string | null
 
-  @Column({ nullable: true })
+  @Column('timestamp', { nullable: true })
   @Index()
-  resetTokenExpire?: Date
+  resetTokenExpire?: Date | null
 
   get hasPassword(): boolean {
     return this.password !== null
@@ -53,6 +54,9 @@ export class UserEntity extends BaseEntity {
     cascade: ['remove'],
   })
   devices!: UserDeviceEntity[]
+
+  @OneToMany(() => ConversationEntity, conv => conv.members)
+  conversations!: ConversationEntity[]
 
   // @OneToMany(() => PlaylistUserEntity, p => p.user)
   // playlistUsers!: PlaylistUserEntity[]

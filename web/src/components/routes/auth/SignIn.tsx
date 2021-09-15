@@ -10,10 +10,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGoogle } from '@fortawesome/free-brands-svg-icons'
 import { useSession } from "../../../hooks/session";
 import { useEffect } from "react";
+import { useError } from "../../../hooks/error";
 
 
 export function SignIn() {
-  const [loginMutation, { loading: loginLoading }] = useLoginMutation();
+  const { onGQLError } = useError();
+  const [loginMutation, { loading: loginLoading }] = useLoginMutation({ onError: onGQLError });
   const history = useHistory()
   const { updateSession, hasDevice, loading, isLoggedIn } = useSession();
   const { fallback, hasFallbackRoute } = useFallbackRouter();
@@ -25,14 +27,15 @@ export function SignIn() {
     resolver: classValidatorResolver(LoginForm),
   })
   const onSubmit = async (variables: LoginForm) => {
-    const { data } = await loginMutation({ variables });
-    if (data && data.login) {
-      updateSession()
-    }
+      const { data } = await loginMutation({ variables });
+      if (data && data.login) {
+        updateSession()
+      }
   }
 
 useEffect(() => {
-    if (!loginLoading && !loading && isLoggedIn) {
+    if (!loginLoading && isLoggedIn) {
+      console.log('redirect')
       if (hasFallbackRoute && hasDevice) fallback();
       else history.push('/')
     }
@@ -65,7 +68,7 @@ useEffect(() => {
           <Button><FontAwesomeIcon icon={faGoogle} className="mr-3"/>Google Account</Button>
         </div>
         <div className="pt-6 text-base leading-6 font-bold sm:text-lg sm:leading-7 flex gap-3 flex-col">
-          <Button loading={loginLoading && loading}>Submit</Button>
+          <Button loading={loginLoading}>Submit</Button>
           <Button to="/auth/sign-up" text>Create my account</Button>
         </div>
       </div>

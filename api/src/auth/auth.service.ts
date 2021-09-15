@@ -14,6 +14,8 @@ import { MailsService } from 'src/mails/mails.service'
 import { UserDeviceEntity } from 'src/user/entity/userdevice.entity'
 import { QueryFailedError, Repository } from 'typeorm'
 import { ResetPasswordTemplate } from 'src/mails/templates/resetpassword.template'
+import { ResetPasswordDto } from './dto/reset-password.dto'
+import { ApiError, ApiErrors } from '@music-room/common'
 
 @Injectable()
 export class AuthService {
@@ -32,10 +34,20 @@ export class AuthService {
       !user.password ||
       !(await argon2.verify(user.password, password))
     ) {
-      throw new BadRequestException('invalid login or password')
+      throw new BadRequestException(
+        new ApiError(
+          ApiErrors.AUTH_INVALID_CREDENTIALS,
+          'invalid login or password',
+        ),
+      )
     }
     if (!user.emailValidated) {
-      throw new BadRequestException('you must validate your email first')
+      throw new BadRequestException(
+        new ApiError(
+          ApiErrors.AUTH_ACCOUNT_NOT_ACTIVATED,
+          'you must validate your email first',
+        ),
+      )
     }
     return user
   }
@@ -52,12 +64,20 @@ export class AuthService {
     } catch (e) {
       if (e instanceof QueryFailedError) {
         if ((e as any).constraint === UserEntity.NAME_UNIQUE_CONSTRAINT) {
-          throw new BadRequestException('name already taken')
+          throw new BadRequestException(
+            new ApiError(
+              ApiErrors.AUTH_ACCOUNT_NAME_ALREADY_EXISTS,
+              'name already taken',
+            ),
+          )
         } else if (
           (e as any).constraint === UserEntity.EMAIL_UNIQUE_CONSTRAINT
         ) {
           throw new BadRequestException(
-            'an account with this email already exists',
+            new ApiError(
+              ApiErrors.AUTH_ACCOUNT_EMAIL_ALREADY_EXISTS,
+              'an account with this email already exists',
+            ),
           )
         } else throw e
       } else throw e
@@ -102,12 +122,20 @@ export class AuthService {
       } catch (e) {
         if (e instanceof QueryFailedError) {
           if ((e as any).constraint === UserEntity.NAME_UNIQUE_CONSTRAINT) {
-            throw new BadRequestException('name already taken')
+            throw new BadRequestException(
+              new ApiError(
+                ApiErrors.AUTH_ACCOUNT_NAME_ALREADY_EXISTS,
+                'name already taken',
+              ),
+            )
           } else if (
             (e as any).constraint === UserEntity.EMAIL_UNIQUE_CONSTRAINT
           ) {
             throw new BadRequestException(
-              'an account with this email already exists',
+              new ApiError(
+                ApiErrors.AUTH_ACCOUNT_EMAIL_ALREADY_EXISTS,
+                'an account with this email already exists',
+              ),
             )
           } else throw e
         } else throw e
@@ -120,7 +148,10 @@ export class AuthService {
   async activateAccount(validationCode: string) {
     const user = await this.userRepository.findOne({ validationCode })
 
-    if (!user) throw new NotFoundException('cannot find account')
+    if (!user)
+      throw new NotFoundException(
+        new ApiError(ApiErrors.AUTH_ACCOUNT_NOT_FOUND, 'cannot find account'),
+      )
     user.validationCode = undefined
     user.emailValidated = true
     await this.userRepository.save(user)
@@ -138,10 +169,18 @@ export class AuthService {
       name: deviceName,
     })
 
-    if (!device) throw new NotFoundException('cannot find device')
+    if (!device)
+      throw new NotFoundException(
+        new ApiError(ApiErrors.AUTH_DEVICE_NOT_FOUND, 'cannot find device'),
+      )
 
     if (!(await argon2.verify(device.secret, deviceSecret)))
-      throw new BadRequestException('invalid device secret')
+      throw new BadRequestException(
+        new ApiError(
+          ApiErrors.AUTH_INVALID_DEVICE_SECRET,
+          'invalid device secret',
+        ),
+      )
 
     return device
   }
@@ -165,7 +204,10 @@ export class AuthService {
           (e as any).constraint === UserDeviceEntity.USER_NAME_UNIQUE_CONSTRAINT
         ) {
           throw new BadRequestException(
-            'a device with this name already exists',
+            new ApiError(
+              ApiErrors.AUTH_DEVICE_NAME_ALREADY_EXISTS,
+              'a device with this name already exists',
+            ),
           )
         } else throw e
       } else throw e
@@ -177,7 +219,13 @@ export class AuthService {
   async sendResetPassword(email: string): Promise<boolean> {
     const user = await this.userRepository.findOne({ email })
 
-    if (!user) throw new NotFoundException('no user found with this email')
+    if (!user)
+      throw new NotFoundException(
+        new ApiError(
+          ApiErrors.AUTH_ACCOUNT_NOT_FOUND,
+          'no user found with this email',
+        ),
+      )
 
     user.resetToken = this.createValidationCode()
     const expireDate = new Date()
@@ -200,24 +248,36 @@ export class AuthService {
     return true
   }
 
-  async resetPassword(
-    token: string,
-    userId: string,
-    password: string,
-  ): Promise<boolean> {
+  async verifyResetToken(id: string, token: string): Promise<UserEntity> {
     const user = await this.userRepository.findOne({
-      id: userId,
+      id: id,
       resetToken: token,
     })
 
-    if (!user) throw new BadRequestException('invalid reset token')
+    if (!user)
+      throw new BadRequestException(
+        new ApiError(
+          ApiErrors.AUTH_INVALID_RESET_PASSWORD_TOKEN,
+          'invalid reset token',
+        ),
+      )
     if (user.resetTokenExpire && user.resetTokenExpire.getTime() < Date.now())
-      throw new BadRequestException('reset token expired')
+      throw new BadRequestException(
+        new ApiError(
+          ApiErrors.AUTH_INVALID_RESET_PASSWORD_TOKEN,
+          'reset token expired',
+        ),
+      )
+    return user
+  }
 
-    delete user.resetToken
-    delete user.resetTokenExpire
+  async resetPassword(data: ResetPasswordDto): Promise<boolean> {
+    const user = await this.verifyResetToken(data.id, data.token)
 
-    user.password = await argon2.hash(password)
+    user.resetToken = null
+    user.resetTokenExpire = null
+
+    user.password = await argon2.hash(data.password)
 
     await this.userRepository.save(user)
 

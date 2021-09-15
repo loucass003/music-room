@@ -54,6 +54,7 @@
     "graphql-fields": "^2.0.3",
     "graphql-subscriptions": "^1.2.1",
     "graphql-tools": "^7.0.5",
+    "graphql-voyager": "^1.0.0-rc.31",
     "passport": "^0.4.1",
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",

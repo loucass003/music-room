@@ -1,7 +1,5 @@
-import { createContext, Reducer, useContext, useEffect, useReducer } from "react";
-import { SessionQuery, useCreateDeviceMutation, useLoginMutation, useLogoutMutation, useSessionLazyQuery, useSetDeviceMutation } from "../graphql/generated-types";
-import { v4 as uuidv4 } from 'uuid';
-
+import { createContext, Reducer, useContext, useLayoutEffect, useReducer } from "react";
+import { SessionQuery, useLogoutMutation, useSessionLazyQuery, useSetDeviceMutation } from "../graphql/generated-types";
 
 export const SessionContext = createContext<Session>(undefined as any);
 
@@ -48,7 +46,7 @@ function authReducer(
 export interface Session {
   session: ISessionState;
   updateSession: () => void;
-  createDevice: (name: string) => void;
+  createDevice: (device: DeviceLocal) => void;
   logout: () => void;
   isLoggedIn: boolean;
   loading: boolean;
@@ -63,7 +61,6 @@ export function useProvideSession(): Session {
   );
 
   const [setDevice] = useSetDeviceMutation();
-  const [createDevice] = useCreateDeviceMutation();
   const [logoutMutation] = useLogoutMutation();
 
   const meCompleted = async (data: SessionQuery) => {
@@ -71,48 +68,41 @@ export function useProvideSession(): Session {
     if (!data.session?.deviceId) {
       const deviceLocalstr = localStorage.getItem('MUSIC_ROOM_DEVICE_LOCAL');
       if (deviceLocalstr) {
+        dispatch({ type: 'loading', loading: true })
         const { deviceName, deviceSecret }: DeviceLocal = JSON.parse(deviceLocalstr);
         if (deviceName && deviceSecret) {
           const { data } = await setDevice({ variables: { deviceName, deviceSecret } })
           if (data?.setDevice) {
-            dispatch({ type: 'loading', loading: true })
             querySession()
           }
-        }
+        } else
+          dispatch({ type: 'loading', loading: false })
       }
     }
-    dispatch({ type: 'loading', loading: false })
+    else 
+      dispatch({ type: 'loading', loading: false })
   };
-  const [querySession] = useSessionLazyQuery({ onCompleted: meCompleted, fetchPolicy: 'network-only' });
+  const [querySession] = useSessionLazyQuery({ 
+    onCompleted: meCompleted, 
+    fetchPolicy: 'network-only', 
+    onError: () => { 
+      dispatch({ type: 'loading', loading: false }) 
+    } 
+  });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     querySession()
-    
   }, [querySession]);
 
   return {
     session: state,
     updateSession: () => querySession(),
-    createDevice: async (name: string) => {
-      const device: DeviceLocal = {
-        deviceName: name,
-        deviceSecret: uuidv4()
-      };
-      dispatch({ type: 'loading', loading: true })
-      const { data, errors } = await createDevice({ variables: device });
-      if (data?.createDevice) {
+    createDevice: async (device: DeviceLocal) => {
         localStorage.setItem('MUSIC_ROOM_DEVICE_LOCAL', JSON.stringify(device));
         querySession()
-      }
-
-      if (errors) {
-        dispatch({ type: 'loading', loading: false })
-      }
     },
     logout: async () => {
-      const { data } = await logoutMutation();
-      if (data?.logout)
-        dispatch({ type: 'session', session: undefined })
+      await logoutMutation();
     },
     isLoggedIn: !!state.session?.me,
     hasDevice: !!state.session?.me && !!state.session.session?.deviceId,

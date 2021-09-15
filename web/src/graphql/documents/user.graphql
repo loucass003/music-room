@@ -10,12 +10,24 @@ query session {
   }
 }
 
+query verifyResetPasswordToken($id: String!, $token: String!) {
+  verifyResetPasswordToken( id: $id, token: $token)
+}
+
 mutation register($email: String!, $name: String!, $password: String!, $confirmPassword: String!) {
   register(data: { email: $email, name: $name, password: $password, confirmPassword: $confirmPassword })
 }
 
 mutation activateAccount($validationCode: String!) {
   activateAccount(validationCode: $validationCode)
+}
+
+mutation sendResetPassword($email: String!) {
+  sendResetPassword(email: $email)
+}
+
+mutation resetPassword($id: String!, $token: String!, $password: String!, $confirmPassword: String!) {
+  resetPassword(data: { id: $id, token: $token, password: $password, confirmPassword: $confirmPassword })
 }
 
 mutation login($email: String!, $password: String!) {

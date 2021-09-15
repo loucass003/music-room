@@ -9,6 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { EntityManager, QueryFailedError, Repository } from 'typeorm'
 import { PlaylistEntity } from './entity/playlist.entity'
 import { PlaylistUserEntity } from './entity/playlistuser.entity'
+import { ApiError, ApiErrors } from '@music-room/common'
 
 @Injectable()
 export class PlaylistService {
@@ -28,7 +29,12 @@ export class PlaylistService {
     device: string,
   ): Promise<UserDeviceEntity> {
     if (device === session.deviceId)
-      throw new BadRequestException('cannot invite yourself in a playlist')
+      throw new BadRequestException(
+        new ApiError(
+          ApiErrors.PLAYLIST_CANNOT_INVITE_YOURSELF,
+          'cannot invite yourself in a playlist',
+        ),
+      )
 
     const [d] = await Promise.all([
       this.deviceRepository.findOneOrFail(device, { relations: ['user'] }),
@@ -76,7 +82,13 @@ export class PlaylistService {
       userDevice: { id: device },
       playlist: { id: playlist },
     })
-    if (count.affected) throw new NotFoundException('playlist user not found')
+    if (count.affected)
+      throw new NotFoundException(
+        new ApiError(
+          ApiErrors.PLAYLIST_USER_NOT_FOUND,
+          'playlist user not found',
+        ),
+      )
     return d
   }
 
@@ -98,7 +110,12 @@ export class PlaylistService {
         newIndex < 0 ||
         newIndex >= pl.entriesYoutubeIds.length
       )
-        throw new BadRequestException('index out of range')
+        throw new BadRequestException(
+          new ApiError(
+            ApiErrors.PLAYLIST_ENTRY_OUT_OF_RANGE,
+            'index out of range',
+          ),
+        )
 
       {
         const element = pl.entriesNames[index]
@@ -128,7 +145,12 @@ export class PlaylistService {
       })
 
       if (index < 0 || index >= pl.entriesYoutubeIds.length)
-        throw new BadRequestException('index out of range')
+        throw new BadRequestException(
+          new ApiError(
+            ApiErrors.PLAYLIST_ENTRY_OUT_OF_RANGE,
+            'index out of range',
+          ),
+        )
 
       pl.entriesNames.splice(index, 1)
       pl.entriesYoutubeIds.splice(index, 1)

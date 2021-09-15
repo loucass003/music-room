@@ -13,6 +13,7 @@ export function Activate() {
 
   
   useEffect(() => {
+    console.log('hello')
     if (validationCode) {
       activate({ variables: { validationCode } })
         .then(({ data }) => {

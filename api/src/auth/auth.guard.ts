@@ -1,3 +1,4 @@
+import { ApiError, ApiErrors } from '@music-room/common'
 import {
   CanActivate,
   ExecutionContext,
@@ -23,9 +24,19 @@ export class AuthGuard implements CanActivate {
     request.user = request.req.user
     const session: UserSession | undefined = request.req.user
     if (!request.req.isAuthenticated())
-      throw new UnauthorizedException('You must be logged in')
+      throw new UnauthorizedException(
+        new ApiError(
+          ApiErrors.UNAUTHORIZED_NOT_LOGGED_IN,
+          'You must be logged in',
+        ),
+      )
     if (this.options.deviceMustBeLogged && !session?.deviceName)
-      throw new UnauthorizedException('Your device must be logged in')
+      throw new UnauthorizedException(
+        new ApiError(
+          ApiErrors.UNAUTHORIZED_NO_DEVICE,
+          'Your device must be logged in',
+        ),
+      )
 
     return true
   }

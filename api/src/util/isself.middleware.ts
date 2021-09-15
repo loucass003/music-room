@@ -1,3 +1,4 @@
+import { ApiError, ApiErrors } from '@music-room/common'
 import { ForbiddenException, UnauthorizedException } from '@nestjs/common'
 import { FieldMiddleware, MiddlewareContext, NextFn } from '@nestjs/graphql'
 import { UserSession } from 'src/auth/session'
@@ -13,12 +14,18 @@ export const IsSelfMiddleware: FieldMiddleware = async (
   const session = getUserSession(ctx.context)
   if (!session)
     throw new UnauthorizedException(
-      `cannot access field ${ctx.info.path.typename}.${ctx.info.path.key} without being logged`,
+      new ApiError(
+        ApiErrors.UNAUTHORIZED_FIELD,
+        `cannot access field ${ctx.info.path.typename}.${ctx.info.path.key} without being logged`,
+      ),
     )
 
   if (session.id !== ctx.source.id)
     throw new ForbiddenException(
-      `cannot access field ${ctx.info.path.typename}.${ctx.info.path.key} from another account`,
+      new ApiError(
+        ApiErrors.UNAUTHORIZED_FIELD,
+        `cannot access field ${ctx.info.path.typename}.${ctx.info.path.key} from another account`,
+      ),
     )
 
   const value = await next()

@@ -1,4 +1,4 @@
-import { faBell, faSearch, faStream, faTh, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faBell, faSearch, faStream, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { MouseEvent, useState } from "react";
 import { Link } from "react-router-dom";

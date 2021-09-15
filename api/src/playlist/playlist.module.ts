@@ -5,7 +5,6 @@ import {
 import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm'
 import { Module } from '@nestjs/common'
 import { PubSub } from 'graphql-subscriptions'
-import { AuthModule } from 'src/auth/auth.module'
 import { UserDeviceEntity } from 'src/user/entity/userdevice.entity'
 import { PlaylistDto } from './dto/playlist.dto'
 import { PlaylistUserDto } from './dto/playlistuser.dto'

@@ -11,6 +11,7 @@ import passport from 'passport'
 import cookieSession from 'cookie-session'
 import { promisify } from 'util'
 import { ServerResponse } from 'http'
+import { ConversationModule } from './chat/conversation.module'
 
 // this sucks, but there seems to be no alternative
 const subscriptionConnectHandler = () => {
@@ -48,6 +49,7 @@ const subscriptionConnectHandler = () => {
     AuthModule,
     MailsModule,
     PlaylistModule,
+    ConversationModule
   ],
   controllers: [],
   providers: [],

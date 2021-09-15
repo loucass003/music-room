@@ -19,6 +19,8 @@ import { MainLayout } from "./components/layouts/MainLayout";
 import { useSession } from "./hooks/session";
 import { Settings } from "./components/routes/settings/Settings";
 import { ResetPassword } from "./components/routes/auth/ResetPassword";
+import { SendResetPassword } from "./components/routes/auth/SendResetPassword";
+import { FullscreenLoader } from "./components/commons/FullscreenLoader";
 
 export interface RouterLocationState {
   is404?: boolean;
@@ -62,8 +64,8 @@ const SessionRoute = ({
       render={
         ({ location }) => (
           <>
-            {!isLoggedIn && !hasDevice && !currLocal.pathname.startsWith(props.path) && <Redirect to={{ pathname: '/auth/sign-in', state: { fallback: location } }}/>}
-            {isLoggedIn && !hasDevice && !currLocal.pathname.startsWith(props.path) && <Redirect to={{ pathname: '/auth/device', state: { fallback: location } }}/>}
+            {!isLoggedIn && !hasDevice && currLocal.pathname !== '/auth/sign-in' && <Redirect to={{ pathname: '/auth/sign-in', state: { fallback: location } }}/>}
+            {isLoggedIn && !hasDevice && currLocal.pathname !== '/auth/device' && <Redirect to={{ pathname: '/auth/device', state: { fallback: location } }}/>}
             {isLoggedIn && hasDevice && loggedFallback && <Redirect to={loggedFallback}/>}
             {children}
           </>
@@ -83,8 +85,8 @@ const AllRoutes = () => (
           <Route path="/auth/sign-up" component={SignUp} />
           <Route path="/auth/activate/:validationCode" component={Activate} />
           <Route path="/auth/activate" component={Activate} />
-          <Route path="/auth/reset-password/:token" component={ResetPassword} />
-          <Route path="/auth/reset-password" component={ResetPassword} />
+          <Route path="/auth/reset-password/:id/:token" component={ResetPassword} />
+          <Route path="/auth/reset-password" component={SendResetPassword} />
           <Route path="/auth/device" component={Device} />
           {/* <Route
             path="/auth/reset-password/:token?"
@@ -109,8 +111,13 @@ const AllRoutes = () => (
 );
 
 export function Routes() {
+
+  const { loading } = useSession();
+
   return (
-    <Router>
+    loading
+    ? <FullscreenLoader></FullscreenLoader>
+    : <Router>
       <Route
         render={({ location }: any) =>
           location.state && location.state.is404 ? <NotFound /> : <AllRoutes />

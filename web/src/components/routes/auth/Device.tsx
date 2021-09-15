@@ -1,33 +1,51 @@
 import { useForm } from "react-hook-form";
 import { Button } from "../../commons/ui/Button";
 import { Input } from "../../commons/ui/Input";
-import { DeviceForm } from "@music-room/common";
+import { ApiErrors, DeviceForm } from "@music-room/common";
 import { classValidatorResolver } from "@hookform/resolvers/class-validator";
-import { useSession } from "../../../hooks/session";
+import { DeviceLocal, useSession } from "../../../hooks/session";
 import { useEffect } from "react";
 import { useHistory } from "react-router-dom";
 import { useFallbackRouter } from "../../../router";
+import { useCreateDeviceMutation } from "../../../graphql/generated-types";
+import { v4 as uuidv4 } from 'uuid';
+import { useError } from "../../../hooks/error";
 
 
 export function Device() {
-
+  const { findError } = useError()
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<DeviceForm>({
     resolver: classValidatorResolver(DeviceForm),
   })
+  const [createDeviceMutation, { loading: formLoading }] = useCreateDeviceMutation({
+    onError: (e) => {
+      const error = findError(e);
+      if (error && error.type === ApiErrors.AUTH_DEVICE_NAME_ALREADY_EXISTS) {
+        setError('name', { message: error.message })
+      }
+    }
+  });
   const { fallback, hasFallbackRoute } = useFallbackRouter();
   const { createDevice, loading, hasDevice } = useSession();
   const history = useHistory()
 
   const onSubmit = async (variables: DeviceForm) => {
-    createDevice(variables.name);
+    const device: DeviceLocal = {
+      deviceName: variables.name,
+      deviceSecret: uuidv4()
+    };
+    const { data } = await createDeviceMutation({ variables: device });
+    
+    if (data?.createDevice)
+      createDevice(device);
   }
 
   useEffect(() => {
-    console.log(loading, hasDevice)
     if (!loading && hasDevice) {
       if (hasFallbackRoute) fallback();
       else history.push('/')
@@ -46,7 +64,7 @@ export function Device() {
             </ul>
           </div>
           <div className="pt-6 text-base leading-6 font-bold sm:text-lg sm:leading-7 flex gap-3 flex-col">
-            <Button loading={loading}>Submit</Button>
+            <Button loading={formLoading}>Submit</Button>
           </div>
         </div>
     </form>
