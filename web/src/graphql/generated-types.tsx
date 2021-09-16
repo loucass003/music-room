@@ -19,6 +19,123 @@ export type Scalars = {
 };
 
 
+export type Conversation = {
+  __typename?: 'Conversation';
+  id: Scalars['ID'];
+  createdAt: Scalars['DateTime'];
+  updatedAt: Scalars['DateTime'];
+  type: Scalars['Float'];
+  playlist: Playlist;
+  members: Array<User>;
+  messages: ConversationMessagesConnection;
+};
+
+
+export type ConversationMembersArgs = {
+  filter?: Maybe<UserFilter>;
+  sorting?: Maybe<Array<UserSort>>;
+};
+
+
+export type ConversationMessagesArgs = {
+  paging?: Maybe<CursorPaging>;
+  filter?: Maybe<MessageFilter>;
+  sorting?: Maybe<Array<MessageSort>>;
+};
+
+export type ConversationAggregateGroupBy = {
+  __typename?: 'ConversationAggregateGroupBy';
+  id?: Maybe<Scalars['ID']>;
+  createdAt?: Maybe<Scalars['DateTime']>;
+  updatedAt?: Maybe<Scalars['DateTime']>;
+  type?: Maybe<Scalars['Float']>;
+};
+
+export type ConversationAvgAggregate = {
+  __typename?: 'ConversationAvgAggregate';
+  type?: Maybe<Scalars['Float']>;
+};
+
+export type ConversationConnection = {
+  __typename?: 'ConversationConnection';
+  /** Paging information */
+  pageInfo: PageInfo;
+  /** Array of edges. */
+  edges: Array<ConversationEdge>;
+};
+
+export type ConversationCountAggregate = {
+  __typename?: 'ConversationCountAggregate';
+  id?: Maybe<Scalars['Int']>;
+  createdAt?: Maybe<Scalars['Int']>;
+  updatedAt?: Maybe<Scalars['Int']>;
+  type?: Maybe<Scalars['Int']>;
+};
+
+export type ConversationEdge = {
+  __typename?: 'ConversationEdge';
+  /** The node containing the Conversation */
+  node: Conversation;
+  /** Cursor for this node. */
+  cursor: Scalars['ConnectionCursor'];
+};
+
+export type ConversationFilter = {
+  and?: Maybe<Array<ConversationFilter>>;
+  or?: Maybe<Array<ConversationFilter>>;
+  id?: Maybe<ConversationIdFilterComparison>;
+  createdAt?: Maybe<DateFieldComparison>;
+  updatedAt?: Maybe<DateFieldComparison>;
+  type?: Maybe<NumberFieldComparison>;
+};
+
+export type ConversationIdFilterComparison = {
+  eq?: Maybe<Scalars['ID']>;
+  in?: Maybe<Array<Scalars['ID']>>;
+};
+
+export type ConversationMaxAggregate = {
+  __typename?: 'ConversationMaxAggregate';
+  id?: Maybe<Scalars['ID']>;
+  createdAt?: Maybe<Scalars['DateTime']>;
+  updatedAt?: Maybe<Scalars['DateTime']>;
+  type?: Maybe<Scalars['Float']>;
+};
+
+export type ConversationMessagesConnection = {
+  __typename?: 'ConversationMessagesConnection';
+  /** Paging information */
+  pageInfo: PageInfo;
+  /** Array of edges. */
+  edges: Array<MessageEdge>;
+};
+
+export type ConversationMinAggregate = {
+  __typename?: 'ConversationMinAggregate';
+  id?: Maybe<Scalars['ID']>;
+  createdAt?: Maybe<Scalars['DateTime']>;
+  updatedAt?: Maybe<Scalars['DateTime']>;
+  type?: Maybe<Scalars['Float']>;
+};
+
+export type ConversationSort = {
+  field: ConversationSortFields;
+  direction: SortDirection;
+  nulls?: Maybe<SortNulls>;
+};
+
+export enum ConversationSortFields {
+  Id = 'id',
+  CreatedAt = 'createdAt',
+  UpdatedAt = 'updatedAt',
+  Type = 'type'
+}
+
+export type ConversationSumAggregate = {
+  __typename?: 'ConversationSumAggregate';
+  type?: Maybe<Scalars['Float']>;
+};
+
 export type CreateOnePlaylistInput = {
   /** The record to create */
   playlist: CreatePlaylistDto;
@@ -70,6 +187,77 @@ export type DeleteOneInput = {
 export enum LoginStrategy {
   Local = 'LOCAL',
   Google = 'GOOGLE'
+}
+
+export type Message = {
+  __typename?: 'Message';
+  id: Scalars['ID'];
+  createdAt: Scalars['DateTime'];
+  updatedAt: Scalars['DateTime'];
+  text: Scalars['String'];
+  conversation: Conversation;
+  author: User;
+};
+
+export type MessageAggregateGroupBy = {
+  __typename?: 'MessageAggregateGroupBy';
+  id?: Maybe<Scalars['ID']>;
+  createdAt?: Maybe<Scalars['DateTime']>;
+  updatedAt?: Maybe<Scalars['DateTime']>;
+};
+
+export type MessageCountAggregate = {
+  __typename?: 'MessageCountAggregate';
+  id?: Maybe<Scalars['Int']>;
+  createdAt?: Maybe<Scalars['Int']>;
+  updatedAt?: Maybe<Scalars['Int']>;
+};
+
+export type MessageEdge = {
+  __typename?: 'MessageEdge';
+  /** The node containing the Message */
+  node: Message;
+  /** Cursor for this node. */
+  cursor: Scalars['ConnectionCursor'];
+};
+
+export type MessageFilter = {
+  and?: Maybe<Array<MessageFilter>>;
+  or?: Maybe<Array<MessageFilter>>;
+  id?: Maybe<MessageIdFilterComparison>;
+  createdAt?: Maybe<DateFieldComparison>;
+  updatedAt?: Maybe<DateFieldComparison>;
+};
+
+export type MessageIdFilterComparison = {
+  eq?: Maybe<Scalars['ID']>;
+  in?: Maybe<Array<Scalars['ID']>>;
+};
+
+export type MessageMaxAggregate = {
+  __typename?: 'MessageMaxAggregate';
+  id?: Maybe<Scalars['ID']>;
+  createdAt?: Maybe<Scalars['DateTime']>;
+  updatedAt?: Maybe<Scalars['DateTime']>;
+};
+
+export type MessageMinAggregate = {
+  __typename?: 'MessageMinAggregate';
+  id?: Maybe<Scalars['ID']>;
+  createdAt?: Maybe<Scalars['DateTime']>;
+  updatedAt?: Maybe<Scalars['DateTime']>;
+};
+
+export type MessageSort = {
+  field: MessageSortFields;
+  direction: SortDirection;
+  nulls?: Maybe<SortNulls>;
+};
+
+export enum MessageSortFields {
+  Id = 'id',
+  CreatedAt = 'createdAt',
+  UpdatedAt = 'updatedAt'
 }
 
 export type Mutation = {
@@ -175,6 +363,26 @@ export type MutationPlaylistEntryAddArgs = {
   name: Scalars['String'];
   youtubeId: Scalars['String'];
   playlist: Scalars['ID'];
+};
+
+export type NumberFieldComparison = {
+  is?: Maybe<Scalars['Boolean']>;
+  isNot?: Maybe<Scalars['Boolean']>;
+  eq?: Maybe<Scalars['Float']>;
+  neq?: Maybe<Scalars['Float']>;
+  gt?: Maybe<Scalars['Float']>;
+  gte?: Maybe<Scalars['Float']>;
+  lt?: Maybe<Scalars['Float']>;
+  lte?: Maybe<Scalars['Float']>;
+  in?: Maybe<Array<Scalars['Float']>>;
+  notIn?: Maybe<Array<Scalars['Float']>>;
+  between?: Maybe<NumberFieldComparisonBetween>;
+  notBetween?: Maybe<NumberFieldComparisonBetween>;
+};
+
+export type NumberFieldComparisonBetween = {
+  lower: Scalars['Float'];
+  upper: Scalars['Float'];
 };
 
 export type PageInfo = {
@@ -456,6 +664,9 @@ export type Query = {
   playlist?: Maybe<Playlist>;
   playlists: PlaylistConnection;
   playlistUser?: Maybe<PlaylistUser>;
+  conversation?: Maybe<Conversation>;
+  conversations: ConversationConnection;
+  message?: Maybe<Message>;
 };
 
 
@@ -502,6 +713,23 @@ export type QueryPlaylistsArgs = {
 
 
 export type QueryPlaylistUserArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type QueryConversationArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type QueryConversationsArgs = {
+  paging?: Maybe<CursorPaging>;
+  filter?: Maybe<ConversationFilter>;
+  sorting?: Maybe<Array<ConversationSort>>;
+};
+
+
+export type QueryMessageArgs = {
   id: Scalars['ID'];
 };
 
@@ -747,6 +975,46 @@ export enum UserSortFields {
   Name = 'name'
 }
 
+export type ConversationsListQueryVariables = Exact<{
+  type?: Maybe<Scalars['Float']>;
+}>;
+
+
+export type ConversationsListQuery = (
+  { __typename?: 'Query' }
+  & { conversations: (
+    { __typename?: 'ConversationConnection' }
+    & { edges: Array<(
+      { __typename?: 'ConversationEdge' }
+      & { node: (
+        { __typename?: 'Conversation' }
+        & Pick<Conversation, 'id'>
+        & { members: Array<(
+          { __typename?: 'User' }
+          & Pick<User, 'id' | 'name'>
+        )> }
+      ) }
+    )> }
+  ) }
+);
+
+export type ConversationQueryVariables = Exact<{
+  id: Scalars['ID'];
+}>;
+
+
+export type ConversationQuery = (
+  { __typename?: 'Query' }
+  & { conversation?: Maybe<(
+    { __typename?: 'Conversation' }
+    & Pick<Conversation, 'id'>
+    & { members: Array<(
+      { __typename?: 'User' }
+      & Pick<User, 'id' | 'name'>
+    )> }
+  )> }
+);
+
 export type SessionQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -859,7 +1127,108 @@ export type CreateDeviceMutation = (
   & Pick<Mutation, 'createDevice'>
 );
 
+export type UserQueryVariables = Exact<{
+  id: Scalars['ID'];
+}>;
 
+
+export type UserQuery = (
+  { __typename?: 'Query' }
+  & { user?: Maybe<(
+    { __typename?: 'User' }
+    & Pick<User, 'id' | 'name'>
+  )> }
+);
+
+
+export const ConversationsListDocument = gql`
+    query conversationsList($type: Float = 0) {
+  conversations(filter: {type: {eq: $type}}) {
+    edges {
+      node {
+        id
+        members {
+          id
+          name
+        }
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useConversationsListQuery__
+ *
+ * To run a query within a React component, call `useConversationsListQuery` and pass it any options that fit your needs.
+ * When your component renders, `useConversationsListQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useConversationsListQuery({
+ *   variables: {
+ *      type: // value for 'type'
+ *   },
+ * });
+ */
+export function useConversationsListQuery(baseOptions?: Apollo.QueryHookOptions<ConversationsListQuery, ConversationsListQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ConversationsListQuery, ConversationsListQueryVariables>(ConversationsListDocument, options);
+      }
+export function useConversationsListLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ConversationsListQuery, ConversationsListQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ConversationsListQuery, ConversationsListQueryVariables>(ConversationsListDocument, options);
+        }
+export type ConversationsListQueryHookResult = ReturnType<typeof useConversationsListQuery>;
+export type ConversationsListLazyQueryHookResult = ReturnType<typeof useConversationsListLazyQuery>;
+export type ConversationsListQueryResult = Apollo.QueryResult<ConversationsListQuery, ConversationsListQueryVariables>;
+export function refetchConversationsListQuery(variables?: ConversationsListQueryVariables) {
+      return { query: ConversationsListDocument, variables: variables }
+    }
+export const ConversationDocument = gql`
+    query conversation($id: ID!) {
+  conversation(id: $id) {
+    id
+    members {
+      id
+      name
+    }
+  }
+}
+    `;
+
+/**
+ * __useConversationQuery__
+ *
+ * To run a query within a React component, call `useConversationQuery` and pass it any options that fit your needs.
+ * When your component renders, `useConversationQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useConversationQuery({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useConversationQuery(baseOptions: Apollo.QueryHookOptions<ConversationQuery, ConversationQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ConversationQuery, ConversationQueryVariables>(ConversationDocument, options);
+      }
+export function useConversationLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ConversationQuery, ConversationQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ConversationQuery, ConversationQueryVariables>(ConversationDocument, options);
+        }
+export type ConversationQueryHookResult = ReturnType<typeof useConversationQuery>;
+export type ConversationLazyQueryHookResult = ReturnType<typeof useConversationLazyQuery>;
+export type ConversationQueryResult = Apollo.QueryResult<ConversationQuery, ConversationQueryVariables>;
+export function refetchConversationQuery(variables?: ConversationQueryVariables) {
+      return { query: ConversationDocument, variables: variables }
+    }
 export const SessionDocument = gql`
     query session {
   me {
@@ -1200,3 +1569,42 @@ export function useCreateDeviceMutation(baseOptions?: Apollo.MutationHookOptions
 export type CreateDeviceMutationHookResult = ReturnType<typeof useCreateDeviceMutation>;
 export type CreateDeviceMutationResult = Apollo.MutationResult<CreateDeviceMutation>;
 export type CreateDeviceMutationOptions = Apollo.BaseMutationOptions<CreateDeviceMutation, CreateDeviceMutationVariables>;
+export const UserDocument = gql`
+    query user($id: ID!) {
+  user(id: $id) {
+    id
+    name
+  }
+}
+    `;
+
+/**
+ * __useUserQuery__
+ *
+ * To run a query within a React component, call `useUserQuery` and pass it any options that fit your needs.
+ * When your component renders, `useUserQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useUserQuery({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useUserQuery(baseOptions: Apollo.QueryHookOptions<UserQuery, UserQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<UserQuery, UserQueryVariables>(UserDocument, options);
+      }
+export function useUserLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<UserQuery, UserQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<UserQuery, UserQueryVariables>(UserDocument, options);
+        }
+export type UserQueryHookResult = ReturnType<typeof useUserQuery>;
+export type UserLazyQueryHookResult = ReturnType<typeof useUserLazyQuery>;
+export type UserQueryResult = Apollo.QueryResult<UserQuery, UserQueryVariables>;
+export function refetchUserQuery(variables?: UserQueryVariables) {
+      return { query: UserDocument, variables: variables }
+    }

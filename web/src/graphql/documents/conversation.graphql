@@ -1,0 +1,25 @@
+
+query conversationsList($type: Float = 0) {
+  conversations(filter: {type: {eq: $type}}) {
+    edges {
+      node {
+        id
+        members {
+          id
+          name
+        }
+      }
+    }
+  }
+}
+
+query conversation($id: ID!) {
+  conversation(id: $id) {
+    id
+    members {
+      id
+      name
+    }
+  }
+}
+

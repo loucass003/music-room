@@ -1,8 +1,9 @@
-import { faBell, faSearch, faStream, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faBell, faComments, faSearch, faStream, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { MouseEvent, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSession } from "../../hooks/session";
+import { Box } from "./ui/Box";
 
 export function UserDrawer() {
 
@@ -15,7 +16,7 @@ export function UserDrawer() {
   }
 
   return (
-    <button className="relative float-right mr-3 cursor-pointer hover:text-gray-700" onClick={toogleDrawer}>
+    <button className="relative mr-3 cursor-pointer hover:text-gray-700" onClick={toogleDrawer}>
       <span className="mx-4">{session.session?.me.name}</span>
       <span className="bg-gray-200 rounded-full p-2">
         <FontAwesomeIcon icon={faUser} className="w-4 h-4"/>
@@ -36,7 +37,7 @@ export function UserDrawer() {
 export function Navbar() {
  
   return (
-    <div className="p-3 m-4 text-gray-900 bg-white rounded-lg shadow-lg font-medium capitalize">
+    <Box className="p-3 m-4 capitalize text-gray-900 font-medium">
       <span className="px-2 mr-2 border-r border-gray-800">
         Music Room
       </span>
@@ -58,14 +59,21 @@ export function Navbar() {
         </span>
       </span>
 
-      <span className="px-1 w-8 float-right relative cursor-pointer hover:text-gray-700">
-        <span className="bg-gray-200 rounded-full p-2">
-          <FontAwesomeIcon icon={faBell} className="w-4 h-4"/>
+      <span className="float-right">
+        <UserDrawer></UserDrawer>
+        <Link to="/conversation/list" className="px-1 mr-3 w-8 relative cursor-pointer hover:text-gray-700">
+          <span className="bg-gray-200 rounded-full p-2">
+            <FontAwesomeIcon icon={faComments} className="w-4 h-4"/>
+          </span>
+        </Link>
+        <span className="px-1 w-8 relative cursor-pointer hover:text-gray-700">
+          <span className="bg-gray-200 rounded-full p-2">
+            <FontAwesomeIcon icon={faBell} className="w-4 h-4"/>
+          </span>
+          <span
+            className="absolute right-0 top-0 -mt-2 -mr-2 text-xs bg-red-500 text-white font-medium px-2 shadow-lg rounded-full">3</span>
         </span>
-        <span
-          className="absolute right-0 top-0 -mt-2 -mr-2 text-xs bg-red-500 text-white font-medium px-2 shadow-lg rounded-full">3</span>
       </span>
-      <UserDrawer></UserDrawer>
-    </div>
+    </Box>
   )
 }

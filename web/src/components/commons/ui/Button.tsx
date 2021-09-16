@@ -14,7 +14,6 @@ interface ButtonProps {
 }
 
 const buttonCN = ({ loading, disabled, text, block }: { loading?: boolean; disabled?: boolean, text?: boolean, block?: boolean }) => cntl`
-  app-button
   font-bold
   py-2
   px-4
@@ -46,7 +45,7 @@ const buttonCN = ({ loading, disabled, text, block }: { loading?: boolean; disab
       text-white
         rounded-lg
         shadow-lg
-        ${loading && `app-button--loading`}
+        ${loading && `loading-effect`}
 
         ${disabled || loading
           ? cntl`

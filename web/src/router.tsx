@@ -8,19 +8,22 @@ import {
   useHistory,
   useLocation,
 } from "react-router-dom";
-import { Activate } from "./components/routes/auth/Activate";
-import { Device } from "./components/routes/auth/Device";
-import { SignIn } from "./components/routes/auth/SignIn";
-import { SignUp } from "./components/routes/auth/SignUp";
+import { Activate } from "./components/auth/Activate";
+import { Device } from "./components/auth/Device";
+import { SignIn } from "./components/auth/SignIn";
+import { SignUp } from "./components/auth/SignUp";
 import { NotFound } from "./components/errors/NotFound";
-import { Home } from "./components/routes/home/Home";
+import { Home } from "./components/home/Home";
 import { AuthLayout } from "./components/layouts/AuthLayout";
 import { MainLayout } from "./components/layouts/MainLayout";
 import { useSession } from "./hooks/session";
-import { Settings } from "./components/routes/settings/Settings";
-import { ResetPassword } from "./components/routes/auth/ResetPassword";
-import { SendResetPassword } from "./components/routes/auth/SendResetPassword";
+import { Settings } from "./components/settings/Settings";
+import { ResetPassword } from "./components/auth/ResetPassword";
+import { SendResetPassword } from "./components/auth/SendResetPassword";
 import { FullscreenLoader } from "./components/commons/FullscreenLoader";
+import { ConversationLayout } from "./components/layouts/ConversationLayout";
+import { Conversations } from "./components/conversation/Conversations";
+import { Conversation } from "./components/conversation/Conversation";
 
 export interface RouterLocationState {
   is404?: boolean;
@@ -95,6 +98,15 @@ const AllRoutes = () => (
           <Route component={RedirectAs404} />
         </Switch>
       </AuthLayout>
+    </SessionRoute>
+
+    <SessionRoute path="/conversation">
+      <ConversationLayout>
+        <Switch>
+          <Route path="/conversation/list" component={Conversations} />
+          <Route path="/conversation/:id" component={Conversation}></Route>
+        </Switch>
+      </ConversationLayout>
     </SessionRoute>
 
     <SessionRoute>

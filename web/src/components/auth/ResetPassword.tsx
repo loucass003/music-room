@@ -3,9 +3,9 @@ import { ResetPasswordForm } from "@music-room/common";
 import { useForm } from "react-hook-form";
 import { useHistory, useParams } from "react-router-dom";
 import { useToasts } from "react-toast-notifications";
-import { useResetPasswordMutation, useVerifyResetPasswordTokenQuery } from "../../../graphql/generated-types";
-import { Button } from "../../commons/ui/Button";
-import { Input } from "../../commons/ui/Input";
+import { useResetPasswordMutation, useVerifyResetPasswordTokenQuery } from "../../graphql/generated-types";
+import { Button } from "../commons/ui/Button";
+import { Input } from "../commons/ui/Input";
 
 
 export function ResetPassword() {

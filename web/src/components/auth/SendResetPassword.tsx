@@ -2,9 +2,9 @@ import { classValidatorResolver } from "@hookform/resolvers/class-validator";
 import { SendResetPasswordForm } from "@music-room/common";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useSendResetPasswordMutation } from "../../../graphql/generated-types";
-import { Button } from "../../commons/ui/Button";
-import { Input } from "../../commons/ui/Input";
+import { useSendResetPasswordMutation } from "../../graphql/generated-types";
+import { Button } from "../commons/ui/Button";
+import { Input } from "../commons/ui/Input";
 
 
 export function SendResetPassword() {

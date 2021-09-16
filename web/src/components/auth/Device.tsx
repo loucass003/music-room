@@ -1,15 +1,15 @@
 import { useForm } from "react-hook-form";
-import { Button } from "../../commons/ui/Button";
-import { Input } from "../../commons/ui/Input";
+import { Button } from "../commons/ui/Button";
+import { Input } from "../commons/ui/Input";
 import { ApiErrors, DeviceForm } from "@music-room/common";
 import { classValidatorResolver } from "@hookform/resolvers/class-validator";
-import { DeviceLocal, useSession } from "../../../hooks/session";
+import { DeviceLocal, useSession } from "../../hooks/session";
 import { useEffect } from "react";
 import { useHistory } from "react-router-dom";
-import { useFallbackRouter } from "../../../router";
-import { useCreateDeviceMutation } from "../../../graphql/generated-types";
+import { useFallbackRouter } from "../../router";
+import { useCreateDeviceMutation } from "../../graphql/generated-types";
 import { v4 as uuidv4 } from 'uuid';
-import { useError } from "../../../hooks/error";
+import { useError } from "../../hooks/error";
 
 
 export function Device() {

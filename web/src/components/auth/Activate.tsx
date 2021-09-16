@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useEffect } from "react";
 import { useHistory, useParams } from "react-router-dom";
-import { useActivateAccountMutation } from "../../../graphql/generated-types";
-import { Button } from "../../commons/ui/Button";
+import { useActivateAccountMutation } from "../../graphql/generated-types";
+import { Button } from "../commons/ui/Button";
 
 
 export function Activate() {

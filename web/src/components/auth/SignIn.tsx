@@ -1,16 +1,16 @@
 import { useForm } from "react-hook-form";
 import { Link, useHistory } from "react-router-dom";
-import { Input } from "../../commons/ui/Input";
-import { Button } from "../../commons/ui/Button";
+import { Input } from "../commons/ui/Input";
+import { Button } from "../commons/ui/Button";
 import { LoginForm } from "@music-room/common";
 import { classValidatorResolver } from "@hookform/resolvers/class-validator";
-import { useFallbackRouter } from "../../../router";
-import { useLoginMutation } from "../../../graphql/generated-types";
+import { useFallbackRouter } from "../../router";
+import { useLoginMutation } from "../../graphql/generated-types";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGoogle } from '@fortawesome/free-brands-svg-icons'
-import { useSession } from "../../../hooks/session";
+import { useSession } from "../../hooks/session";
 import { useEffect } from "react";
-import { useError } from "../../../hooks/error";
+import { useError } from "../../hooks/error";
 
 
 export function SignIn() {
