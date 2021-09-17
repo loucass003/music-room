@@ -80,6 +80,8 @@ export type ConversationEdge = {
   cursor: Scalars['ConnectionCursor'];
 };
 
+export type ConversationEvent = NewMessageEvent;
+
 export type ConversationFilter = {
   and?: Maybe<Array<ConversationFilter>>;
   or?: Maybe<Array<ConversationFilter>>;
@@ -194,7 +196,7 @@ export type Message = {
   id: Scalars['ID'];
   createdAt: Scalars['DateTime'];
   updatedAt: Scalars['DateTime'];
-  text: Scalars['String'];
+  content: Scalars['String'];
   conversation: Conversation;
   author: User;
 };
@@ -204,6 +206,14 @@ export type MessageAggregateGroupBy = {
   id?: Maybe<Scalars['ID']>;
   createdAt?: Maybe<Scalars['DateTime']>;
   updatedAt?: Maybe<Scalars['DateTime']>;
+};
+
+export type MessageConnection = {
+  __typename?: 'MessageConnection';
+  /** Paging information */
+  pageInfo: PageInfo;
+  /** Array of edges. */
+  edges: Array<MessageEdge>;
 };
 
 export type MessageCountAggregate = {
@@ -278,6 +288,7 @@ export type Mutation = {
   playlistEntryMove: Scalars['Boolean'];
   playlistEntryRemove: Scalars['Boolean'];
   playlistEntryAdd: Scalars['Boolean'];
+  sendMessage: Scalars['Boolean'];
 };
 
 
@@ -363,6 +374,17 @@ export type MutationPlaylistEntryAddArgs = {
   name: Scalars['String'];
   youtubeId: Scalars['String'];
   playlist: Scalars['ID'];
+};
+
+
+export type MutationSendMessageArgs = {
+  content: Scalars['String'];
+  conversation: Scalars['ID'];
+};
+
+export type NewMessageEvent = {
+  __typename?: 'NewMessageEvent';
+  message: Message;
 };
 
 export type NumberFieldComparison = {
@@ -667,6 +689,7 @@ export type Query = {
   conversation?: Maybe<Conversation>;
   conversations: ConversationConnection;
   message?: Maybe<Message>;
+  messages: MessageConnection;
 };
 
 
@@ -733,6 +756,13 @@ export type QueryMessageArgs = {
   id: Scalars['ID'];
 };
 
+
+export type QueryMessagesArgs = {
+  paging?: Maybe<CursorPaging>;
+  filter?: Maybe<MessageFilter>;
+  sorting?: Maybe<Array<MessageSort>>;
+};
+
 export type RegisterDto = {
   email: Scalars['String'];
   name: Scalars['String'];
@@ -779,11 +809,17 @@ export type StringFieldComparison = {
 export type Subscription = {
   __typename?: 'Subscription';
   playlistEvents: PlaylistEvent;
+  watchConversation: ConversationEvent;
 };
 
 
 export type SubscriptionPlaylistEventsArgs = {
   playlist: Scalars['ID'];
+};
+
+
+export type SubscriptionWatchConversationArgs = {
+  conversation: Scalars['ID'];
 };
 
 export type UpdateOneInput = {
@@ -1000,6 +1036,7 @@ export type ConversationsListQuery = (
 
 export type ConversationQueryVariables = Exact<{
   id: Scalars['ID'];
+  first?: Maybe<Scalars['Int']>;
 }>;
 
 
@@ -1011,8 +1048,52 @@ export type ConversationQuery = (
     & { members: Array<(
       { __typename?: 'User' }
       & Pick<User, 'id' | 'name'>
-    )> }
+    )>, messages: (
+      { __typename?: 'ConversationMessagesConnection' }
+      & { edges: Array<(
+        { __typename?: 'MessageEdge' }
+        & { node: (
+          { __typename?: 'Message' }
+          & Pick<Message, 'id' | 'content' | 'createdAt'>
+          & { author: (
+            { __typename?: 'User' }
+            & Pick<User, 'id' | 'name'>
+          ) }
+        ) }
+      )> }
+    ) }
   )> }
+);
+
+export type SendMessageMutationVariables = Exact<{
+  content: Scalars['String'];
+  conversation: Scalars['ID'];
+}>;
+
+
+export type SendMessageMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'sendMessage'>
+);
+
+export type WatchConversationSubscriptionVariables = Exact<{
+  conversation: Scalars['ID'];
+}>;
+
+
+export type WatchConversationSubscription = (
+  { __typename?: 'Subscription' }
+  & { watchConversation: (
+    { __typename?: 'NewMessageEvent' }
+    & { message: (
+      { __typename?: 'Message' }
+      & Pick<Message, 'id' | 'content' | 'createdAt'>
+      & { author: (
+        { __typename?: 'User' }
+        & Pick<User, 'id' | 'name'>
+      ) }
+    ) }
+  ) }
 );
 
 export type SessionQueryVariables = Exact<{ [key: string]: never; }>;
@@ -1188,12 +1269,25 @@ export function refetchConversationsListQuery(variables?: ConversationsListQuery
       return { query: ConversationsListDocument, variables: variables }
     }
 export const ConversationDocument = gql`
-    query conversation($id: ID!) {
+    query conversation($id: ID!, $first: Int = 15) {
   conversation(id: $id) {
     id
     members {
       id
       name
+    }
+    messages(paging: {first: $first}) {
+      edges {
+        node {
+          id
+          content
+          createdAt
+          author {
+            id
+            name
+          }
+        }
+      }
     }
   }
 }
@@ -1212,6 +1306,7 @@ export const ConversationDocument = gql`
  * const { data, loading, error } = useConversationQuery({
  *   variables: {
  *      id: // value for 'id'
+ *      first: // value for 'first'
  *   },
  * });
  */
@@ -1229,6 +1324,78 @@ export type ConversationQueryResult = Apollo.QueryResult<ConversationQuery, Conv
 export function refetchConversationQuery(variables?: ConversationQueryVariables) {
       return { query: ConversationDocument, variables: variables }
     }
+export const SendMessageDocument = gql`
+    mutation sendMessage($content: String!, $conversation: ID!) {
+  sendMessage(content: $content, conversation: $conversation)
+}
+    `;
+export type SendMessageMutationFn = Apollo.MutationFunction<SendMessageMutation, SendMessageMutationVariables>;
+
+/**
+ * __useSendMessageMutation__
+ *
+ * To run a mutation, you first call `useSendMessageMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSendMessageMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [sendMessageMutation, { data, loading, error }] = useSendMessageMutation({
+ *   variables: {
+ *      content: // value for 'content'
+ *      conversation: // value for 'conversation'
+ *   },
+ * });
+ */
+export function useSendMessageMutation(baseOptions?: Apollo.MutationHookOptions<SendMessageMutation, SendMessageMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<SendMessageMutation, SendMessageMutationVariables>(SendMessageDocument, options);
+      }
+export type SendMessageMutationHookResult = ReturnType<typeof useSendMessageMutation>;
+export type SendMessageMutationResult = Apollo.MutationResult<SendMessageMutation>;
+export type SendMessageMutationOptions = Apollo.BaseMutationOptions<SendMessageMutation, SendMessageMutationVariables>;
+export const WatchConversationDocument = gql`
+    subscription watchConversation($conversation: ID!) {
+  watchConversation(conversation: $conversation) {
+    ... on NewMessageEvent {
+      message {
+        id
+        content
+        createdAt
+        author {
+          id
+          name
+        }
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useWatchConversationSubscription__
+ *
+ * To run a query within a React component, call `useWatchConversationSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useWatchConversationSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useWatchConversationSubscription({
+ *   variables: {
+ *      conversation: // value for 'conversation'
+ *   },
+ * });
+ */
+export function useWatchConversationSubscription(baseOptions: Apollo.SubscriptionHookOptions<WatchConversationSubscription, WatchConversationSubscriptionVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useSubscription<WatchConversationSubscription, WatchConversationSubscriptionVariables>(WatchConversationDocument, options);
+      }
+export type WatchConversationSubscriptionHookResult = ReturnType<typeof useWatchConversationSubscription>;
+export type WatchConversationSubscriptionResult = Apollo.SubscriptionResult<WatchConversationSubscription>;
 export const SessionDocument = gql`
     query session {
   me {

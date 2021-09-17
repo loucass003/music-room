@@ -13,13 +13,45 @@ query conversationsList($type: Float = 0) {
   }
 }
 
-query conversation($id: ID!) {
+query conversation($id: ID!, $first: Int = 15) {
   conversation(id: $id) {
     id
     members {
       id
       name
     }
+    messages(paging: { first: $first }) {
+      edges {
+        node {
+          id
+          content
+          createdAt
+          author {
+            id
+            name
+          }
+        }
+      }
+    }
   }
 }
 
+mutation sendMessage($content: String!, $conversation: ID!) {
+  sendMessage(content: $content, conversation: $conversation)
+}
+
+subscription watchConversation($conversation: ID!) {
+  watchConversation(conversation: $conversation) {
+    ... on NewMessageEvent {
+      message {
+        id
+        content
+        createdAt
+        author {
+          id
+          name
+        }
+      }
+    }
+  }
+}
