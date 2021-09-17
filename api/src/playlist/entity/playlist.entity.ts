@@ -3,7 +3,7 @@ import { BaseEntity } from 'src/base.entity'
 import { ConversationEntity } from 'src/chat/entity/conversation.entity'
 import { UserEntity } from 'src/user/entity/user.entity'
 import { UserDeviceEntity } from 'src/user/entity/userdevice.entity'
-import { Column, Entity, ManyToOne, OneToMany, OneToOne } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm'
 import { PlaylistUserEntity } from './playlistuser.entity'
 
 @Entity()
@@ -24,6 +24,7 @@ export class PlaylistEntity extends BaseEntity {
   name!: string
   
   @OneToOne(() => ConversationEntity)
+  @JoinColumn()
   conversation!: ConversationEntity
   
   @Column()

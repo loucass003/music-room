@@ -18,5 +18,6 @@ import { UserDeviceResolver } from './resolver/userdevice.resolver'
     }),
   ],
   providers: [UserResolver, UserDeviceResolver],
+  exports: [UserResolver, UserDeviceResolver],
 })
 export class UserModule {}

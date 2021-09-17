@@ -1,14 +1,21 @@
 /* eslint-disable @typescript-eslint/no-inferrable-types */
-import { Authorize, FilterableField, OperationGroup, Relation } from '@nestjs-query/query-graphql'
-import { Field, ObjectType } from '@nestjs/graphql'
+import {
+  Authorize,
+  CursorConnection,
+  FilterableField,
+  Relation,
+  UnPagedRelation,
+} from '@nestjs-query/query-graphql'
+import { ObjectType } from '@nestjs/graphql'
 import { AuthorizedCtx } from 'src/auth/session'
 import { BaseDto } from 'src/base.dto'
 import { PlaylistDto } from 'src/playlist/dto/playlist.dto'
 import { UserDto } from 'src/user/dto/user.dto'
 import { ConversationType } from '../entity/conversation.entity'
+import { MessageDto } from './message.dto'
 
 @ObjectType('Conversation')
-@Relation('members', () => UserDto, {
+@UnPagedRelation('members', () => UserDto, {
   disableUpdate: true,
   disableRemove: true,
 })
@@ -16,14 +23,18 @@ import { ConversationType } from '../entity/conversation.entity'
   disableUpdate: true,
   disableRemove: true,
 })
-// @Authorize({
-//   authorize: (context: AuthorizedCtx, req) => ({ members: { in: context.req.user?.id } }),
-// })
+@CursorConnection('messages', () => MessageDto, {
+  disableRemove: true,
+  disableUpdate: true,
+})
+@Authorize({
+  authorize: (context: AuthorizedCtx, req) => ({
+    members: { id: { eq: context.req.user?.id } },
+  }),
+})
 export class ConversationDto extends BaseDto {
-
-  @Field()
+  @FilterableField()
   type!: ConversationType
 
   members: any
-
 }

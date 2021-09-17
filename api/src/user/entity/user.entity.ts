@@ -1,6 +1,14 @@
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 import { ConversationEntity } from 'src/chat/entity/conversation.entity'
-import { Column, Entity, Index, OneToMany, Unique } from 'typeorm'
+import {
+  Column,
+  Entity,
+  Index,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  Unique,
+} from 'typeorm'
 import { BaseEntity } from '../../base.entity'
 import { UserDeviceEntity } from './userdevice.entity'
 
@@ -55,7 +63,7 @@ export class UserEntity extends BaseEntity {
   })
   devices!: UserDeviceEntity[]
 
-  @OneToMany(() => ConversationEntity, conv => conv.members)
+  @ManyToMany(() => ConversationEntity, conversation => conversation.members)
   conversations!: ConversationEntity[]
 
   // @OneToMany(() => PlaylistUserEntity, p => p.user)

@@ -9,9 +9,9 @@ import { PlaylistDto } from './playlist.dto'
 @Relation('device', () => UserDeviceDto)
 @Relation('user', () => UserDto)
 export class PlaylistInviteEventDto {
-  constructor(
-    p: { [K in keyof PlaylistInviteEventDto]: PlaylistInviteEventDto[K] },
-  ) {
+  constructor(p: {
+    [K in keyof PlaylistInviteEventDto]: PlaylistInviteEventDto[K]
+  }) {
     Object.assign(this, p)
   }
 
@@ -36,9 +36,9 @@ export class PlaylistInviteEventDto {
 @Relation('device', () => UserDeviceDto)
 @Relation('user', () => UserDto)
 export class PlaylistKickEventDto {
-  constructor(
-    p: { [K in keyof PlaylistKickEventDto]: PlaylistKickEventDto[K] },
-  ) {
+  constructor(p: {
+    [K in keyof PlaylistKickEventDto]: PlaylistKickEventDto[K]
+  }) {
     Object.assign(this, p)
   }
 
@@ -61,9 +61,9 @@ export class PlaylistKickEventDto {
 @ObjectType('PlaylistDeleteEvent')
 @Relation('playlist', () => PlaylistDto)
 export class PlaylistDeleteEventDto {
-  constructor(
-    p: { [K in keyof PlaylistDeleteEventDto]: PlaylistDeleteEventDto[K] },
-  ) {
+  constructor(p: {
+    [K in keyof PlaylistDeleteEventDto]: PlaylistDeleteEventDto[K]
+  }) {
     Object.assign(this, p)
   }
 
@@ -74,9 +74,9 @@ export class PlaylistDeleteEventDto {
 @ObjectType('PlaylistUpdateEvent')
 @Relation('playlist', () => PlaylistDto)
 export class PlaylistUpdateEventDto {
-  constructor(
-    p: { [K in keyof PlaylistUpdateEventDto]: PlaylistUpdateEventDto[K] },
-  ) {
+  constructor(p: {
+    [K in keyof PlaylistUpdateEventDto]: PlaylistUpdateEventDto[K]
+  }) {
     Object.assign(this, p)
   }
 
@@ -96,9 +96,9 @@ export class PlaylistUpdateEventDto {
 @ObjectType('PlaylistEntryMoveEvent')
 @Relation('playlist', () => PlaylistDto)
 export class PlaylistEntryMoveEventDto {
-  constructor(
-    p: { [K in keyof PlaylistEntryMoveEventDto]: PlaylistEntryMoveEventDto[K] },
-  ) {
+  constructor(p: {
+    [K in keyof PlaylistEntryMoveEventDto]: PlaylistEntryMoveEventDto[K]
+  }) {
     Object.assign(this, p)
   }
 
@@ -114,11 +114,9 @@ export class PlaylistEntryMoveEventDto {
 
 @ObjectType('PlaylistEntryRemoveEvent')
 export class PlaylistEntryRemoveEventDto {
-  constructor(
-    p: {
-      [K in keyof PlaylistEntryRemoveEventDto]: PlaylistEntryRemoveEventDto[K]
-    },
-  ) {
+  constructor(p: {
+    [K in keyof PlaylistEntryRemoveEventDto]: PlaylistEntryRemoveEventDto[K]
+  }) {
     Object.assign(this, p)
   }
 
@@ -131,9 +129,9 @@ export class PlaylistEntryRemoveEventDto {
 
 @ObjectType('PlaylistEntryAddEvent')
 export class PlaylistEntryAddEventDto {
-  constructor(
-    p: { [K in keyof PlaylistEntryAddEventDto]: PlaylistEntryAddEventDto[K] },
-  ) {
+  constructor(p: {
+    [K in keyof PlaylistEntryAddEventDto]: PlaylistEntryAddEventDto[K]
+  }) {
     Object.assign(this, p)
   }
 

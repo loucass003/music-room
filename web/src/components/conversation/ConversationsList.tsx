@@ -29,6 +29,7 @@ export function ConversationList() {
     <div className="flex-auto min-h-0 flex-col">
       {loading && <h1>Loading</h1>}
       {data && data.conversations.edges.map(({ node }) => <ConversationItem key={node.id} id={node.id} members={node.members}></ConversationItem>) }
+      {data && data.conversations.edges.length === 0 && <h1>You have no conversations</h1>}
     </div>
   )
 }
