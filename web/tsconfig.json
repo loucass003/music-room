@@ -20,5 +20,6 @@
     "jsx": "react-jsx"
   },
   "include": ["src"],
+  "exclude": ["**/node_modules", "**/.*/"],
   "references": [{ "path": "../common", "module": "@music-room/common" }]
 }

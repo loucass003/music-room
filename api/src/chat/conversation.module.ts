@@ -5,6 +5,7 @@ import { PubSub } from 'graphql-subscriptions'
 import { UserEntity } from 'src/user/entity/user.entity'
 import { ConversationService } from './conversation.service'
 import { ConversationDto } from './dto/conversation.dto'
+import { NewMessageEventDto } from './dto/conversationevent.dto'
 import { MessageDto } from './dto/message.dto'
 import { ConversationEntity } from './entity/conversation.entity'
 import { MessageEntity } from './entity/message.entity'
@@ -21,7 +22,11 @@ import { MessageResolver } from './resolver/message.resolver'
           UserEntity,
         ]),
       ],
-      dtos: [{ DTOClass: ConversationDto }, { DTOClass: MessageDto }],
+      dtos: [
+        { DTOClass: ConversationDto },
+        { DTOClass: MessageDto },
+        { DTOClass: NewMessageEventDto },
+      ],
     }),
   ],
   providers: [

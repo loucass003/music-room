@@ -49,7 +49,7 @@ const subscriptionConnectHandler = () => {
     AuthModule,
     MailsModule,
     PlaylistModule,
-    ConversationModule
+    ConversationModule,
   ],
   controllers: [],
   providers: [],

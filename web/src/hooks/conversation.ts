@@ -1,8 +1,10 @@
+import { Maybe } from "graphql/jsutils/Maybe";
 import { Reducer, useReducer } from "react";
-import { Message, useConversationQuery, User, useSendMessageMutation, useWatchConversationSubscription } from "../graphql/generated-types";
+import { Conversation, Message, useConversationQuery, User, useSendMessageMutation, useWatchConversationSubscription } from "../graphql/generated-types";
+import { useError } from "./error";
 
 interface UseConversationParams {
-  conversationId: string
+  conversationId: string,
 }
 
 type ConversationMessage = {
@@ -13,8 +15,30 @@ type ConversationMessage = {
   } & Pick<User, "id" | "name">;
 }
 
+type ConversationResult = Maybe<(     
+  { __typename?: 'Conversation' }
+  & Pick<Conversation, 'id'>
+  & { members: Array<(
+    { __typename?: 'User' }
+    & Pick<User, 'id' | 'name'>
+  )>, messages: (
+    { __typename?: 'ConversationMessagesConnection' }
+    & { edges: Array<(
+      { __typename?: 'MessageEdge' }
+      & { node: (
+        { __typename?: 'Message' }
+        & Pick<Message, 'id' | 'content' | 'createdAt'>
+        & { author: (
+          { __typename?: 'User' }
+          & Pick<User, 'id' | 'name'>
+        ) }
+      ) }
+    )> }
+  ) })>
+
 type ConversationAction = 
   | { type: 'loading', value: boolean }
+  | { type: 'conversation', conversation?: ConversationResult }
   | { type: 'messageLoading', value: boolean }
   | { type: 'messages', messages: ConversationMessage[] }
   | { type: 'NewMessageEvent', message: Message }
@@ -22,7 +46,9 @@ type ConversationAction =
 interface ConversationState {
   messages?: ConversationMessage[],
   loading: boolean,
-  messageSending: boolean
+  messageSending: boolean,
+  conversation?: ConversationResult, 
+  conversationNotFound: boolean
 }
 
 function conversationReducer(
@@ -36,10 +62,13 @@ function conversationReducer(
         messages: [...state.messages || [], action.message]
       }
     }
-    case "messages": {
+    case "conversation": {
       return {
         ...state,
-        messages: action.messages
+        loading: false,
+        conversationNotFound: !action.conversation,
+        conversation: action.conversation,
+        messages: action.conversation?.messages.edges.map(({ node }) => node) || []
       }
     }
     case "loading": {
@@ -61,40 +90,47 @@ function conversationReducer(
 }
 
 export function useConversation({ conversationId }: UseConversationParams) {
-  
   const [state, dispatch] = useReducer<Reducer<ConversationState, ConversationAction>>(
     conversationReducer,
-    { loading: true, messages: [], messageSending: false }
+    { loading: true, messages: [], messageSending: false, conversationNotFound: false }
   );
-
+    
   const [sendMessage] = useSendMessageMutation({})
+  const { onGQLError } = useError();
   
   const { data } = useConversationQuery({ 
     variables: { id: conversationId, first: 50 }, //TODO: need to change
     onCompleted: ({ conversation }) => {
-      dispatch({ type: 'messages', messages: conversation?.messages.edges.map(({ node }) => node) || [] })
-      dispatch({ type: 'loading', value: false })
+      dispatch({ type: 'conversation', conversation });
+    },
+    onError: (error) => {
+      onGQLError(error);
+
     }
   })
 
   useWatchConversationSubscription({ 
     variables: { conversation: conversationId }, 
-    onSubscriptionData: ({ subscriptionData: { data } }) => {
+    onSubscriptionData: ({ subscriptionData: { data , error }}) => {
       if (data?.watchConversation) {
         const event = data?.watchConversation;
         if (!event.__typename)
           throw new Error('__typename not set');
         dispatch({ type: event.__typename, ...(event as any) })
-    }
-  }});
+      }
+      if (error) {
+        console.log(error)
+      }
+    },
+  });
 
   return {
-    conversation: data?.conversation,
     state,
-    sendMessage: async (content: string): Promise<void> => {
+    sendMessage: async (content: string) => {
       dispatch({ type: "messageLoading", value: true })
-      await sendMessage({ variables: { content, conversation: conversationId } })
+      const message = await sendMessage({ variables: { content, conversation: conversationId }, errorPolicy: 'none' })
       dispatch({ type: "messageLoading", value: false })
+      return message;
     }
   }
 }
