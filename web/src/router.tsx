@@ -67,7 +67,7 @@ const SessionRoute = ({
       render={
         ({ location }) => (
           <>
-            {!isLoggedIn && !hasDevice && !currLocal.pathname.startsWith(props.path) && <Redirect to={{ pathname: '/auth/sign-in', state: { fallback: location } }}/>}
+            {!isLoggedIn && !hasDevice && !currLocal.pathname.startsWith('/auth/sign-') && <Redirect to={{ pathname: '/auth/sign-in', state: { fallback: location } }}/>}
             {isLoggedIn && !hasDevice && currLocal.pathname !== '/auth/device' && <Redirect to={{ pathname: '/auth/device', state: { fallback: location } }}/>}
             {isLoggedIn && hasDevice && loggedFallback && <Redirect to={loggedFallback}/>}
             {children}

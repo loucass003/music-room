@@ -2,6 +2,7 @@ import { faUserFriends } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { Link, useParams } from "react-router-dom"
 import { useConversationsListQuery, User } from "../../graphql/generated-types"
+import { FullscreenLoader } from "../commons/FullscreenLoader"
 
 const ConversationItem = ({ id, members }: { id: string, members: Pick<User, 'id' | 'name'>[] }) => {
   const { id: pageId } = useParams<{ id: string }>()
@@ -24,10 +25,12 @@ export function ConversationList() {
   const { data, loading } = useConversationsListQuery()
 
   return (
-    <div className="flex-auto min-h-0 flex-col">
-      {loading && <h1>Loading</h1>}
-      {data && data.conversations.edges.map(({ node }) => <ConversationItem key={node.id} id={node.id} members={node.members}></ConversationItem>) }
-      {data && data.conversations.edges.length === 0 && <h1>You have no conversations</h1>}
-    </div>
+    <>
+      {loading && <FullscreenLoader relative></FullscreenLoader>}
+      <div className="flex-auto min-h-0 flex-col">
+        {data && data.conversations.edges.map(({ node }) => <ConversationItem key={node.id} id={node.id} members={node.members}></ConversationItem>) }
+        {data && data.conversations.edges.length === 0 && <h1>You have no conversations</h1>}
+      </div>
+    </>
   )
 }

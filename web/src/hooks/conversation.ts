@@ -7,7 +7,7 @@ interface UseConversationParams {
   conversationId: string,
 }
 
-type ConversationMessage = {
+export type ConversationMessage = {
   __typename?: "Message" | undefined;
 } & Pick<Message, "id" | "content" | "createdAt"> & {
   author: {
@@ -39,16 +39,18 @@ type ConversationResult = Maybe<(
 type ConversationAction = 
   | { type: 'loading', value: boolean }
   | { type: 'conversation', conversation?: ConversationResult }
-  | { type: 'messageLoading', value: boolean }
+  | { type: 'messageSending', value: boolean }
   | { type: 'messages', messages: ConversationMessage[] }
   | { type: 'NewMessageEvent', message: Message }
+  | { type: 'loadingNextPage', value: boolean}
 
 interface ConversationState {
   messages?: ConversationMessage[],
   loading: boolean,
   messageSending: boolean,
   conversation?: ConversationResult, 
-  conversationNotFound: boolean
+  conversationNotFound: boolean,
+  loadingNextPage: boolean
 }
 
 function conversationReducer(
@@ -77,10 +79,16 @@ function conversationReducer(
         loading: action.value
       }
     }
-    case "messageLoading": {
+    case "loadingNextPage": {
       return {
         ...state,
-        loading: action.value
+        loadingNextPage: action.value
+      }
+    }
+    case "messageSending": {
+      return {
+        ...state,
+        messageSending: action.value
       }
     }
     default: {
@@ -92,20 +100,19 @@ function conversationReducer(
 export function useConversation({ conversationId }: UseConversationParams) {
   const [state, dispatch] = useReducer<Reducer<ConversationState, ConversationAction>>(
     conversationReducer,
-    { loading: true, messages: [], messageSending: false, conversationNotFound: false }
+    { loading: true, messages: [], messageSending: false, conversationNotFound: false, loadingNextPage: false }
   );
     
   const [sendMessage] = useSendMessageMutation({})
   const { onGQLError } = useError();
   
-  const { data } = useConversationQuery({ 
-    variables: { id: conversationId, first: 50 }, //TODO: need to change
+  useConversationQuery({ 
+    variables: { id: conversationId, first: 12 }, //TODO: need to change
     onCompleted: ({ conversation }) => {
       dispatch({ type: 'conversation', conversation });
     },
     onError: (error) => {
       onGQLError(error);
-
     }
   })
 
@@ -127,10 +134,18 @@ export function useConversation({ conversationId }: UseConversationParams) {
   return {
     state,
     sendMessage: async (content: string) => {
-      dispatch({ type: "messageLoading", value: true })
+      dispatch({ type: "messageSending", value: true })
       const message = await sendMessage({ variables: { content, conversation: conversationId }, errorPolicy: 'none' })
-      dispatch({ type: "messageLoading", value: false })
+      dispatch({ type: "messageSending", value: false })
       return message;
+    },
+    nextPage: () => {
+      dispatch({ type: "loadingNextPage", value: true })
+      setTimeout(() => {
+        console.log('next page')
+        dispatch({ type: "loadingNextPage", value: false })
+      }, 3000)
+;      // dispatch({ type:  })
     }
   }
 }

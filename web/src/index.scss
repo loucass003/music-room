@@ -7,3 +7,20 @@
 body {
     background-color: rgb(235, 235, 235);
 }
+
+
+.app-conversation {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 100px);
+
+    &__container {
+        flex-grow: 1;
+        overflow-y: scroll;
+    }
+
+    &__send {
+        height: 40px
+    }
+
+}

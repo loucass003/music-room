@@ -48,7 +48,7 @@ const inputLabelCN = cntl`
 export const Input = forwardRef<HTMLInputElement, InputProps>(({ error, label, disabled, ...others }: InputProps, ref) => {
   return (
     <div className="appInput w-full">
-      <div className={inputLabelCN}>{label}</div>
+      {label && <div className={inputLabelCN}>{label}</div>}
       <input ref={ref} {...others} className={inputCN({ hasError: !!error, disabled })}></input>
       {error && <div className={inputErrorCN}>{error}</div>}
     </div>

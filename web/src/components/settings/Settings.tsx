@@ -13,7 +13,6 @@ export function Settings() {
   const {
     register,
     handleSubmit,
-    reset,
     formState: { errors },
   } = useForm<ChangeSettingsForm>({
     resolver: classValidatorResolver(ChangeSettingsForm),
@@ -26,7 +25,6 @@ export function Settings() {
   const onSubmit = async (variables: ChangeSettingsForm) => {
     await changeSettings({ variables: { id: session.session!.me.id, ...variables }})
     updateSession()
-    reset()
   }
 
   return (

@@ -15,10 +15,10 @@ export function ConversationLayout({ children }: ConversationLayoutProps) {
       </div>
       <div className="flex h-full mb-4 flex-col">
         <div className="flex mx-4 gap-4 h-full">
-          <Box insideSpacing className="h-full w-1/3">
+          <Box insideSpacing className="h-full w-1/3 max-w-sm">
             <ConversationList></ConversationList>
           </Box>
-          <Box insideSpacing className="h-full flex-grow">
+          <Box className="h-full flex-grow">
             {children}
           </Box>
         </div>

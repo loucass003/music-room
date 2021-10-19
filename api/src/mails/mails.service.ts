@@ -11,12 +11,13 @@ export class MailsService {
   }
 
   async sendMail(template: MailTemplate, to: string) {
-    await sendgrid.send({
+    const [res] = await sendgrid.send({
       to,
       from: configService.getSendgridSender(),
       subject: template.subject,
       templateId: template.templateId,
       dynamicTemplateData: classToPlain(template),
     })
+    console.log(res)
   }
 }

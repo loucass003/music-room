@@ -1,5 +1,5 @@
 
 
 export function Conversations() {
-  return <h1>COnversations</h1>
+  return <h1>Pick a conversation</h1>
 }

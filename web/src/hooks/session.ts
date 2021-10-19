@@ -6,6 +6,7 @@ export const SessionContext = createContext<Session>(undefined as any);
 export type SessionActions =
   | { type: "session", session?: SessionQuery }
   | { type: "loading", loading: boolean }
+  | { type: "logout" }
 
 export interface ISessionState {
   session?: SessionQuery;
@@ -17,15 +18,14 @@ export interface DeviceLocal {
   deviceName: string;
 }
 
+const initialState: ISessionState = { loading: true }; 
+
 function authReducer(
   state: ISessionState,
   action: SessionActions
 ): ISessionState {
   switch (action.type) {
     case "session": {
-      if (action.session?.session?.deviceId) {
-
-      }
       return {
         ...state,
         session: action.session
@@ -36,6 +36,9 @@ function authReducer(
         ...state,
         loading: action.loading
       }
+    }
+    case "logout": {
+      return { ...initialState }
     }
     default: {
       throw new Error(`Unhandled action type: ${(action as any).type}`);
@@ -60,7 +63,7 @@ export function useProvideSession(): Session {
     { loading: true }
   );
 
-  const [setDevice] = useSetDeviceMutation();
+  const [setDevice] = useSetDeviceMutation({});
   const [logoutMutation] = useLogoutMutation();
 
   const meCompleted = async (data: SessionQuery) => {
@@ -103,6 +106,9 @@ export function useProvideSession(): Session {
     },
     logout: async () => {
       await logoutMutation();
+      dispatch({ type: 'logout' })
+      localStorage.removeItem('MUSIC_ROOM_DEVICE_LOCAL');
+      querySession()
     },
     isLoggedIn: !!state.session?.me,
     hasDevice: !!state.session?.me && !!state.session.session?.deviceId,
