@@ -38,9 +38,9 @@ export function Navbar() {
  
   return (
     <Box className="p-3 m-4 capitalize text-gray-900 font-medium">
-      <span className="px-2 mr-2 border-r border-gray-800">
+      <Link to="/" className="px-2 mr-2 border-r border-gray-800">
         Music Room
-      </span>
+      </Link>
       <span className="px-2 py-1 cursor-pointer hover:bg-gray-200 hover:text-gray-700 text-sm rounded mb-5">
         <span className="bg-gray-200 rounded-full p-2">
           <FontAwesomeIcon icon={faStream} className="w-4 h-4"/>

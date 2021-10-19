@@ -272,6 +272,7 @@ export enum MessageSortFields {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  updateOneUser: User;
   login: Scalars['Boolean'];
   register: Scalars['Boolean'];
   logout: Scalars['Boolean'];
@@ -289,6 +290,11 @@ export type Mutation = {
   playlistEntryRemove: Scalars['Boolean'];
   playlistEntryAdd: Scalars['Boolean'];
   sendMessage: Scalars['Boolean'];
+};
+
+
+export type MutationUpdateOneUserArgs = {
+  input: UpdateOneUserInput;
 };
 
 
@@ -809,7 +815,7 @@ export type StringFieldComparison = {
 export type Subscription = {
   __typename?: 'Subscription';
   playlistEvents: PlaylistEvent;
-  watchConversation: ConversationEvent;
+  watchMessages: Message;
 };
 
 
@@ -818,7 +824,7 @@ export type SubscriptionPlaylistEventsArgs = {
 };
 
 
-export type SubscriptionWatchConversationArgs = {
+export type SubscriptionWatchMessagesArgs = {
   conversation: Scalars['ID'];
 };
 
@@ -829,9 +835,21 @@ export type UpdateOneInput = {
   update: UpdatePlaylistDto;
 };
 
+export type UpdateOneUserInput = {
+  /** The id of the record to update */
+  id: Scalars['ID'];
+  /** The update to apply. */
+  update: UpdateUserDto;
+};
+
 export type UpdatePlaylistDto = {
   public?: Maybe<Scalars['Boolean']>;
   everyoneCanEdit?: Maybe<Scalars['Boolean']>;
+};
+
+export type UpdateUserDto = {
+  name?: Maybe<Scalars['String']>;
+  email?: Maybe<Scalars['String']>;
 };
 
 export type User = {
@@ -1103,7 +1121,7 @@ export type SessionQuery = (
   { __typename?: 'Query' }
   & { me: (
     { __typename?: 'User' }
-    & Pick<User, 'id' | 'name'>
+    & Pick<User, 'id' | 'name' | 'email'>
   ), session?: Maybe<(
     { __typename?: 'UserSession' }
     & Pick<UserSession, 'id' | 'deviceName' | 'deviceId'>
@@ -1206,6 +1224,21 @@ export type CreateDeviceMutationVariables = Exact<{
 export type CreateDeviceMutation = (
   { __typename?: 'Mutation' }
   & Pick<Mutation, 'createDevice'>
+);
+
+export type ChangeSettingsMutationVariables = Exact<{
+  id: Scalars['ID'];
+  name?: Maybe<Scalars['String']>;
+  email?: Maybe<Scalars['String']>;
+}>;
+
+
+export type ChangeSettingsMutation = (
+  { __typename?: 'Mutation' }
+  & { updateOneUser: (
+    { __typename?: 'User' }
+    & Pick<User, 'id'>
+  ) }
 );
 
 export type UserQueryVariables = Exact<{
@@ -1401,6 +1434,7 @@ export const SessionDocument = gql`
   me {
     id
     name
+    email
   }
   session {
     id
@@ -1736,6 +1770,41 @@ export function useCreateDeviceMutation(baseOptions?: Apollo.MutationHookOptions
 export type CreateDeviceMutationHookResult = ReturnType<typeof useCreateDeviceMutation>;
 export type CreateDeviceMutationResult = Apollo.MutationResult<CreateDeviceMutation>;
 export type CreateDeviceMutationOptions = Apollo.BaseMutationOptions<CreateDeviceMutation, CreateDeviceMutationVariables>;
+export const ChangeSettingsDocument = gql`
+    mutation changeSettings($id: ID!, $name: String, $email: String) {
+  updateOneUser(input: {id: $id, update: {name: $name, email: $email}}) {
+    id
+  }
+}
+    `;
+export type ChangeSettingsMutationFn = Apollo.MutationFunction<ChangeSettingsMutation, ChangeSettingsMutationVariables>;
+
+/**
+ * __useChangeSettingsMutation__
+ *
+ * To run a mutation, you first call `useChangeSettingsMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useChangeSettingsMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [changeSettingsMutation, { data, loading, error }] = useChangeSettingsMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      name: // value for 'name'
+ *      email: // value for 'email'
+ *   },
+ * });
+ */
+export function useChangeSettingsMutation(baseOptions?: Apollo.MutationHookOptions<ChangeSettingsMutation, ChangeSettingsMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<ChangeSettingsMutation, ChangeSettingsMutationVariables>(ChangeSettingsDocument, options);
+      }
+export type ChangeSettingsMutationHookResult = ReturnType<typeof useChangeSettingsMutation>;
+export type ChangeSettingsMutationResult = Apollo.MutationResult<ChangeSettingsMutation>;
+export type ChangeSettingsMutationOptions = Apollo.BaseMutationOptions<ChangeSettingsMutation, ChangeSettingsMutationVariables>;
 export const UserDocument = gql`
     query user($id: ID!) {
   user(id: $id) {

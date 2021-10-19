@@ -2,6 +2,7 @@ query session {
   me {
     id
     name
+    email
   }
   session {
     id

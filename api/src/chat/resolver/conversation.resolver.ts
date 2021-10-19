@@ -47,7 +47,7 @@ export class ConversationResolver extends CRUDResolver(ConversationDto, {
   @UseGuards(new AuthGuard())
   async sendMessage(
     @CurrentSession() session: UserSession,
-    @Args('conversation') conversation: string,
+    @Args('conversation', { type: () => ID }) conversation: string,
     @Args('content') content: string,
   ): Promise<boolean> {
     const message = await this.conversationService.sendMessage(
