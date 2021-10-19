@@ -1,14 +1,11 @@
 import { CRUDResolver } from '@nestjs-query/query-graphql'
-import { Args, Mutation, Resolver } from '@nestjs/graphql'
+import { Resolver } from '@nestjs/graphql'
 import { AuthGuard } from 'src/auth/auth.guard'
 import { MessageDto } from '../dto/message.dto'
 import { MessageEntity } from '../entity/message.entity'
 import { InjectQueryService, QueryService } from '@nestjs-query/core'
 import { ConversationService } from '../conversation.service'
-import { Inject, UseGuards } from '@nestjs/common'
-import { CurrentSession } from 'src/auth/currentsession.decorator'
-import { UserSession } from 'src/auth/session'
-import { NewMessageEventDto } from '../dto/messageevent.dto'
+import { Inject } from '@nestjs/common'
 import { PubSub } from 'graphql-subscriptions'
 
 @Resolver(() => MessageDto)

@@ -16,9 +16,10 @@ import { ConversationDto } from './conversation.dto'
   disableRemove: true,
 })
 // @Authorize({
-//   authorize: (context: AuthorizedCtx, req) => ({
-//     conversation: { members: { id: { eq: context.req.user?.id } } },
-//   }),
+//   authorize: (context: AuthorizedCtx, req) =>
+//     ({
+//       conversation: { members: { id: { eq: context.req.user?.id } } },
+//     } as any),
 // })
 export class MessageDto extends BaseDto {
   @Field(() => String)

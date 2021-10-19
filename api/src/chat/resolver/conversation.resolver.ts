@@ -1,4 +1,4 @@
-import { Filter, InjectQueryService, QueryService } from '@nestjs-query/core'
+import { InjectQueryService, QueryService } from '@nestjs-query/core'
 import { CRUDResolver } from '@nestjs-query/query-graphql'
 import { Inject, UseGuards } from '@nestjs/common'
 import { Args, ID, Mutation, Resolver, Subscription } from '@nestjs/graphql'
@@ -8,8 +8,10 @@ import { CurrentSession } from 'src/auth/currentsession.decorator'
 import { UserSession } from 'src/auth/session'
 import { ConversationService } from '../conversation.service'
 import { ConversationDto } from '../dto/conversation.dto'
-import { MessageDto } from '../dto/message.dto'
-import { NewMessageEventDto } from '../dto/messageevent.dto'
+import {
+  ConversationEvent,
+  NewMessageEventDto,
+} from '../dto/conversationevent.dto'
 import { ConversationEntity } from '../entity/conversation.entity'
 
 @Resolver(() => ConversationDto)
@@ -30,17 +32,20 @@ export class ConversationResolver extends CRUDResolver(ConversationDto, {
     super(service)
   }
 
-  @Subscription(() => MessageDto, {
-    filter: (payload, variables) =>
-      payload.conversationId == variables.conversation,
+  @Subscription(() => ConversationEvent, {
+    filter: (payload, variables) => {
+      console.log(payload, variables)
+      return payload.conversationId == variables.conversation
+    },
     resolve: data => data,
   })
   @UseGuards(new AuthGuard())
-  watchMessages(
+  watchConversation(
     @CurrentSession() session: UserSession,
     @Args('conversation', { type: () => ID }) conversation: string,
   ) {
-    return this.pubSub.asyncIterator(['messageEvent'])
+    console.log('watching', conversation)
+    return this.pubSub.asyncIterator(['ConversationEvent'])
   }
 
   @Mutation(() => Boolean)
@@ -56,9 +61,9 @@ export class ConversationResolver extends CRUDResolver(ConversationDto, {
       content,
     )
     await this.pubSub.publish(
-      'messageEvent',
+      'ConversationEvent',
       new NewMessageEventDto({
-        messageId: message.id,
+        message: message,
         conversationId: conversation,
       }),
     )

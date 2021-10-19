@@ -6,8 +6,6 @@ import { useConversationsListQuery, User } from "../../graphql/generated-types"
 const ConversationItem = ({ id, members }: { id: string, members: Pick<User, 'id' | 'name'>[] }) => {
   const { id: pageId } = useParams<{ id: string }>()
 
-  console.log(pageId)
-
   return ( 
     <Link to={`/conversation/${id}`} className={`flex flex-row flex-grow items-center hover:bg-gray-100 rounded-lg px-2 ${id === pageId && 'bg-color-gray-50'}`}>
       <div className="flex w-10 h-10 min-w-10 rounded-full items-center justify-center bg-gray-300">
