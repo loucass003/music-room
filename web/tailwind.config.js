@@ -1,4 +1,5 @@
 const colors = require('tailwindcss/colors')
+const forms = require('@tailwindcss/forms');
 
 // tailwind.config.js
 module.exports = {
@@ -17,5 +18,5 @@ module.exports = {
     },
   },
   variants: {},
-  plugins: [],
+  plugins: [forms],
 }

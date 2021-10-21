@@ -13,14 +13,17 @@ query conversationsList($type: Float = 0) {
   }
 }
 
-query conversation($id: ID!, $first: Int = 15) {
+query conversation($id: ID!, $first: Int!) {
   conversation(id: $id) {
     id
     members {
       id
       name
     }
-    messages(paging: { first: $first }) {
+    messages(paging: { first: $first }, sorting: { field: id, direction: DESC }) {
+      pageInfo {
+        hasNextPage
+      }
       edges {
         node {
           id
@@ -31,10 +34,38 @@ query conversation($id: ID!, $first: Int = 15) {
             name
           }
         }
+        cursor
       }
     }
   }
 }
+
+query conversationMessages($id: ID!, $first: Int!, $after: ConnectionCursor) {
+  conversation(id: $id) {
+    id
+    messages(
+      paging: {first: $first, after: $after}
+      sorting: {field: id, direction: DESC}
+    ) {
+      pageInfo {
+        hasNextPage
+      }
+      edges {
+        node {
+          id
+          content
+          createdAt
+          author {
+            id
+            name
+          }
+        }
+        cursor
+      }
+    }
+  }
+}
+
 
 mutation sendMessage($content: String!, $conversation: ID!) {
   sendMessage(content: $content, conversation: $conversation)

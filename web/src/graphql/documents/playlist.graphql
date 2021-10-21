@@ -1,0 +1,16 @@
+mutation createPlaylist($name: String!, $public: Boolean!, $everyoneCanEdit: Boolean!) {
+  createOnePlaylist(input: { playlist: { name: $name, public: $public, everyoneCanEdit: $everyoneCanEdit } }) {
+    id
+  }
+}
+
+query playlist($id: ID!) {
+  playlist(id: $id) {
+    id
+    name
+    owner {
+      id
+      name
+    }
+  }
+}

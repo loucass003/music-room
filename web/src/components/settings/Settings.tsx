@@ -5,6 +5,7 @@ import { useChangeSettingsMutation } from '../../graphql/generated-types'
 import { useSession } from '../../hooks/session'
 import { Button } from '../commons/ui/Button'
 import { Input } from '../commons/ui/Input'
+import { Box } from '../commons/ui/Box'
 
 export function Settings() {
   const { session, updateSession } = useSession()
@@ -28,32 +29,35 @@ export function Settings() {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-lg h-full flex-grow p-5">
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <h1>Settings</h1>
-
-        <Input
-          type="text"
-          placeholder="Your name"
-          label="Name"
-          {...register('name', {
-            setValueAs: val =>
-              val === '' || val === session.session!.me.name ? undefined : val,
-          })}
-          error={errors.name?.message}
-        ></Input>
-        <Input
-          type="text"
-          placeholder="Your email"
-          label="Email"
-          {...register('email', {
-            setValueAs: val =>
-              val === '' || val === session.session!.me.email ? undefined : val,
-          })}
-          error={errors.email?.message}
-        ></Input>
-        <Button>Submit</Button>
+    <Box insideSpacing>
+      <form className="flex flex-col" onSubmit={handleSubmit(onSubmit)}>
+        <div className="flex justify-center">
+          <div className="text-lg font-bold">Settings</div>
+        </div>
+        <div className="flex flex-col gap-4">
+          <Input
+            type="text"
+            placeholder="Your name"
+            label="Name"
+            {...register('name', {
+              setValueAs: val =>
+                val === '' || val === session.session!.me.name ? undefined : val,
+            })}
+            error={errors.name?.message}
+          ></Input>
+          <Input
+            type="text"
+            placeholder="Your email"
+            label="Email"
+            {...register('email', {
+              setValueAs: val =>
+                val === '' || val === session.session!.me.email ? undefined : val,
+            })}
+            error={errors.email?.message}
+          ></Input>
+          <Button>Submit</Button>
+        </div>
       </form>
-    </div>
+    </Box>
   )
 }

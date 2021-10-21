@@ -23,7 +23,9 @@ import { SendResetPassword } from "./components/auth/SendResetPassword";
 import { FullscreenLoader } from "./components/commons/FullscreenLoader";
 import { ConversationLayout } from "./components/layouts/ConversationLayout";
 import { Conversations } from "./components/conversation/Conversations";
-import { Conversation } from "./components/conversation/Conversation";
+import { NewPlaylist } from "./components/playlist/NewPlaylist";
+import { Playlist } from "./components/playlist/Playlist";
+import { ConversationPage } from "./components/conversation/ConversationPage";
 
 export interface RouterLocationState {
   is404?: boolean;
@@ -67,7 +69,7 @@ const SessionRoute = ({
       render={
         ({ location }) => (
           <>
-            {!isLoggedIn && !hasDevice && !currLocal.pathname.startsWith('/auth/sign-') && <Redirect to={{ pathname: '/auth/sign-in', state: { fallback: location } }}/>}
+            {!isLoggedIn && !hasDevice && !currLocal.pathname.startsWith('/auth') && <Redirect to={{ pathname: '/auth/sign-in', state: { fallback: location } }}/>}
             {isLoggedIn && !hasDevice && currLocal.pathname !== '/auth/device' && <Redirect to={{ pathname: '/auth/device', state: { fallback: location } }}/>}
             {isLoggedIn && hasDevice && loggedFallback && <Redirect to={loggedFallback}/>}
             {children}
@@ -104,11 +106,18 @@ const AllRoutes = () => (
       <ConversationLayout>
         <Switch>
           <Route path="/conversation/list" component={Conversations} />
-          <Route path="/conversation/:id" component={Conversation}></Route>
+          <Route path="/conversation/:id" component={ConversationPage}></Route>
         </Switch>
       </ConversationLayout>
     </SessionRoute>
 
+    <SessionRoute path="/playlist">
+      <MainLayout>
+        <Route path="/playlist/new" component={NewPlaylist} />
+        <Route path="/playlist/:id" component={Playlist} />
+      </MainLayout>
+    </SessionRoute>
+    
     <SessionRoute>
       <MainLayout>
         <Switch>

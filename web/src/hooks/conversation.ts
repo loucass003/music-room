@@ -1,56 +1,61 @@
 import { Maybe } from "graphql/jsutils/Maybe";
 import { Reducer, useReducer } from "react";
-import { Conversation, Message, useConversationQuery, User, useSendMessageMutation, useWatchConversationSubscription } from "../graphql/generated-types";
+import { Conversation, Message, MessageEdge, PageInfo, Scalars, useConversationMessagesLazyQuery, useConversationQuery, User, useSendMessageMutation, useWatchConversationSubscription } from "../graphql/generated-types";
 import { useError } from "./error";
 
 interface UseConversationParams {
   conversationId: string,
+  itemsPerPage: number,
+  onNewMessage: (message: MessageNode) => void 
 }
 
-export type ConversationMessage = {
-  __typename?: "Message" | undefined;
-} & Pick<Message, "id" | "content" | "createdAt"> & {
-  author: {
-      __typename?: "User" | undefined;
-  } & Pick<User, "id" | "name">;
-}
+export type MessageNode =  (
+  { __typename?: 'Message' } 
+  & Pick<Message, 'id' | 'content' | 'createdAt'>
+  & { author: ({ __typename?: 'User' } & Pick<User, 'id' | 'name'>)}
+) ;
 
-type ConversationResult = Maybe<(     
+export type ConversationMessageEdge = (
+  { __typename?: 'MessageEdge' }
+  & Pick<MessageEdge, 'cursor'>
+  & { 
+    node: MessageNode
+  }
+);
+
+export type ConversationMessages = Array<ConversationMessageEdge>
+
+type ConversationResult = Maybe<(
   { __typename?: 'Conversation' }
   & Pick<Conversation, 'id'>
-  & { members: Array<(
-    { __typename?: 'User' }
-    & Pick<User, 'id' | 'name'>
-  )>, messages: (
-    { __typename?: 'ConversationMessagesConnection' }
-    & { edges: Array<(
-      { __typename?: 'MessageEdge' }
-      & { node: (
-        { __typename?: 'Message' }
-        & Pick<Message, 'id' | 'content' | 'createdAt'>
-        & { author: (
-          { __typename?: 'User' }
-          & Pick<User, 'id' | 'name'>
-        ) }
-      ) }
-    )> }
-  ) })>
+  & { 
+    members: Array<({ __typename?: 'User' } & Pick<User, 'id' | 'name'>)>, 
+    messages: (
+      { __typename?: 'ConversationMessagesConnection' } 
+      & { 
+        pageInfo: ({ __typename?: 'PageInfo' } & Pick<PageInfo, 'hasNextPage'>),
+        edges: ConversationMessages 
+      }
+    ) 
+  }
+)>
 
 type ConversationAction = 
   | { type: 'loading', value: boolean }
   | { type: 'conversation', conversation?: ConversationResult }
   | { type: 'messageSending', value: boolean }
-  | { type: 'messages', messages: ConversationMessage[] }
-  | { type: 'NewMessageEvent', message: Message }
+  | { type: 'NewMessagesEvent', messages: ConversationMessages, hasNextPage: boolean }
+  | { type: 'NewMessageEvent', message: MessageNode }
   | { type: 'loadingNextPage', value: boolean}
 
 interface ConversationState {
-  messages?: ConversationMessage[],
+  messages?: ConversationMessages,
   loading: boolean,
   messageSending: boolean,
   conversation?: ConversationResult, 
   conversationNotFound: boolean,
-  loadingNextPage: boolean
+  loadingNextPage: boolean,
+  hasNextPage: boolean
 }
 
 function conversationReducer(
@@ -61,7 +66,14 @@ function conversationReducer(
     case "NewMessageEvent": {
       return {
         ...state,
-        messages: [...state.messages || [], action.message]
+        messages: [{ node: action.message, cursor: 'NULL' }, ...state.messages || []]
+      }
+    }
+    case "NewMessagesEvent": {
+      return {
+        ...state,
+       messages: [...state.messages || [], ...action.messages],
+       hasNextPage: action.hasNextPage
       }
     }
     case "conversation": {
@@ -70,7 +82,8 @@ function conversationReducer(
         loading: false,
         conversationNotFound: !action.conversation,
         conversation: action.conversation,
-        messages: action.conversation?.messages.edges.map(({ node }) => node) || []
+        messages: action.conversation?.messages.edges,
+        hasNextPage: action.conversation?.messages.pageInfo.hasNextPage || false
       }
     }
     case "loading": {
@@ -97,17 +110,27 @@ function conversationReducer(
   }
 }
 
-export function useConversation({ conversationId }: UseConversationParams) {
+export function useConversation({ conversationId, itemsPerPage, onNewMessage }: UseConversationParams) {
   const [state, dispatch] = useReducer<Reducer<ConversationState, ConversationAction>>(
     conversationReducer,
-    { loading: true, messages: [], messageSending: false, conversationNotFound: false, loadingNextPage: false }
+    { loading: true, messages: [], messageSending: false, conversationNotFound: false, loadingNextPage: false, hasNextPage: false }
   );
     
   const [sendMessage] = useSendMessageMutation({})
-  const { onGQLError } = useError();
+  const {onGQLError} = useError();
+  const [queryMessages] = useConversationMessagesLazyQuery({
+    onError: (error) => {
+      onGQLError(error);
+    },
+    nextFetchPolicy: 'network-only',
+    onCompleted: ({ conversation }) => {
+      dispatch({ type: 'NewMessagesEvent', messages: conversation?.messages.edges || [], hasNextPage: conversation?.messages.pageInfo.hasNextPage || false })
+      dispatch({ type: "loadingNextPage", value: false })
+    }
+  });
   
   useConversationQuery({ 
-    variables: { id: conversationId, first: 12 }, //TODO: need to change
+    variables: { id: conversationId, first: itemsPerPage }, //TODO: need to change
     onCompleted: ({ conversation }) => {
       dispatch({ type: 'conversation', conversation });
     },
@@ -124,6 +147,9 @@ export function useConversation({ conversationId }: UseConversationParams) {
         if (!event.__typename)
           throw new Error('__typename not set');
         dispatch({ type: event.__typename, ...(event as any) })
+        if (event.__typename === 'NewMessageEvent') {
+          onNewMessage(event.message)
+        }
       }
       if (error) {
         console.log(error)
@@ -139,13 +165,12 @@ export function useConversation({ conversationId }: UseConversationParams) {
       dispatch({ type: "messageSending", value: false })
       return message;
     },
-    nextPage: () => {
+    loadMessages: (after: Scalars['ConnectionCursor']) => {
+      if (state.loadingNextPage || !state.hasNextPage) return;
       dispatch({ type: "loadingNextPage", value: true })
-      setTimeout(() => {
-        console.log('next page')
-        dispatch({ type: "loadingNextPage", value: false })
-      }, 3000)
-;      // dispatch({ type:  })
-    }
+      queryMessages({ variables: { id: conversationId, first: itemsPerPage, after } })
+     
+    },
+    messages: [...state.messages || []].reverse()
   }
 }

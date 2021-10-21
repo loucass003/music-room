@@ -74,7 +74,7 @@ export function useProvideSession(): Session {
         dispatch({ type: 'loading', loading: true })
         const { deviceName, deviceSecret }: DeviceLocal = JSON.parse(deviceLocalstr);
         if (deviceName && deviceSecret) {
-          const { data } = await setDevice({ variables: { deviceName, deviceSecret } })
+          const { data } = await setDevice({ variables: { deviceName, deviceSecret }})
           if (data?.setDevice) {
             querySession()
           }

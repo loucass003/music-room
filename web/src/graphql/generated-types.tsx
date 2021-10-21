@@ -815,7 +815,7 @@ export type StringFieldComparison = {
 export type Subscription = {
   __typename?: 'Subscription';
   playlistEvents: PlaylistEvent;
-  watchMessages: Message;
+  watchConversation: ConversationEvent;
 };
 
 
@@ -824,7 +824,7 @@ export type SubscriptionPlaylistEventsArgs = {
 };
 
 
-export type SubscriptionWatchMessagesArgs = {
+export type SubscriptionWatchConversationArgs = {
   conversation: Scalars['ID'];
 };
 
@@ -1054,7 +1054,7 @@ export type ConversationsListQuery = (
 
 export type ConversationQueryVariables = Exact<{
   id: Scalars['ID'];
-  first?: Maybe<Scalars['Int']>;
+  first: Scalars['Int'];
 }>;
 
 
@@ -1068,8 +1068,45 @@ export type ConversationQuery = (
       & Pick<User, 'id' | 'name'>
     )>, messages: (
       { __typename?: 'ConversationMessagesConnection' }
-      & { edges: Array<(
+      & { pageInfo: (
+        { __typename?: 'PageInfo' }
+        & Pick<PageInfo, 'hasNextPage'>
+      ), edges: Array<(
         { __typename?: 'MessageEdge' }
+        & Pick<MessageEdge, 'cursor'>
+        & { node: (
+          { __typename?: 'Message' }
+          & Pick<Message, 'id' | 'content' | 'createdAt'>
+          & { author: (
+            { __typename?: 'User' }
+            & Pick<User, 'id' | 'name'>
+          ) }
+        ) }
+      )> }
+    ) }
+  )> }
+);
+
+export type ConversationMessagesQueryVariables = Exact<{
+  id: Scalars['ID'];
+  first: Scalars['Int'];
+  after?: Maybe<Scalars['ConnectionCursor']>;
+}>;
+
+
+export type ConversationMessagesQuery = (
+  { __typename?: 'Query' }
+  & { conversation?: Maybe<(
+    { __typename?: 'Conversation' }
+    & Pick<Conversation, 'id'>
+    & { messages: (
+      { __typename?: 'ConversationMessagesConnection' }
+      & { pageInfo: (
+        { __typename?: 'PageInfo' }
+        & Pick<PageInfo, 'hasNextPage'>
+      ), edges: Array<(
+        { __typename?: 'MessageEdge' }
+        & Pick<MessageEdge, 'cursor'>
         & { node: (
           { __typename?: 'Message' }
           & Pick<Message, 'id' | 'content' | 'createdAt'>
@@ -1112,6 +1149,38 @@ export type WatchConversationSubscription = (
       ) }
     ) }
   ) }
+);
+
+export type CreatePlaylistMutationVariables = Exact<{
+  name: Scalars['String'];
+  public: Scalars['Boolean'];
+  everyoneCanEdit: Scalars['Boolean'];
+}>;
+
+
+export type CreatePlaylistMutation = (
+  { __typename?: 'Mutation' }
+  & { createOnePlaylist: (
+    { __typename?: 'Playlist' }
+    & Pick<Playlist, 'id'>
+  ) }
+);
+
+export type PlaylistQueryVariables = Exact<{
+  id: Scalars['ID'];
+}>;
+
+
+export type PlaylistQuery = (
+  { __typename?: 'Query' }
+  & { playlist?: Maybe<(
+    { __typename?: 'Playlist' }
+    & Pick<Playlist, 'id' | 'name'>
+    & { owner: (
+      { __typename?: 'User' }
+      & Pick<User, 'id' | 'name'>
+    ) }
+  )> }
 );
 
 export type SessionQueryVariables = Exact<{ [key: string]: never; }>;
@@ -1302,14 +1371,17 @@ export function refetchConversationsListQuery(variables?: ConversationsListQuery
       return { query: ConversationsListDocument, variables: variables }
     }
 export const ConversationDocument = gql`
-    query conversation($id: ID!, $first: Int = 15) {
+    query conversation($id: ID!, $first: Int!) {
   conversation(id: $id) {
     id
     members {
       id
       name
     }
-    messages(paging: {first: $first}) {
+    messages(paging: {first: $first}, sorting: {field: id, direction: DESC}) {
+      pageInfo {
+        hasNextPage
+      }
       edges {
         node {
           id
@@ -1320,6 +1392,7 @@ export const ConversationDocument = gql`
             name
           }
         }
+        cursor
       }
     }
   }
@@ -1356,6 +1429,66 @@ export type ConversationLazyQueryHookResult = ReturnType<typeof useConversationL
 export type ConversationQueryResult = Apollo.QueryResult<ConversationQuery, ConversationQueryVariables>;
 export function refetchConversationQuery(variables?: ConversationQueryVariables) {
       return { query: ConversationDocument, variables: variables }
+    }
+export const ConversationMessagesDocument = gql`
+    query conversationMessages($id: ID!, $first: Int!, $after: ConnectionCursor) {
+  conversation(id: $id) {
+    id
+    messages(
+      paging: {first: $first, after: $after}
+      sorting: {field: id, direction: DESC}
+    ) {
+      pageInfo {
+        hasNextPage
+      }
+      edges {
+        node {
+          id
+          content
+          createdAt
+          author {
+            id
+            name
+          }
+        }
+        cursor
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useConversationMessagesQuery__
+ *
+ * To run a query within a React component, call `useConversationMessagesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useConversationMessagesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useConversationMessagesQuery({
+ *   variables: {
+ *      id: // value for 'id'
+ *      first: // value for 'first'
+ *      after: // value for 'after'
+ *   },
+ * });
+ */
+export function useConversationMessagesQuery(baseOptions: Apollo.QueryHookOptions<ConversationMessagesQuery, ConversationMessagesQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ConversationMessagesQuery, ConversationMessagesQueryVariables>(ConversationMessagesDocument, options);
+      }
+export function useConversationMessagesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ConversationMessagesQuery, ConversationMessagesQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ConversationMessagesQuery, ConversationMessagesQueryVariables>(ConversationMessagesDocument, options);
+        }
+export type ConversationMessagesQueryHookResult = ReturnType<typeof useConversationMessagesQuery>;
+export type ConversationMessagesLazyQueryHookResult = ReturnType<typeof useConversationMessagesLazyQuery>;
+export type ConversationMessagesQueryResult = Apollo.QueryResult<ConversationMessagesQuery, ConversationMessagesQueryVariables>;
+export function refetchConversationMessagesQuery(variables?: ConversationMessagesQueryVariables) {
+      return { query: ConversationMessagesDocument, variables: variables }
     }
 export const SendMessageDocument = gql`
     mutation sendMessage($content: String!, $conversation: ID!) {
@@ -1429,6 +1562,86 @@ export function useWatchConversationSubscription(baseOptions: Apollo.Subscriptio
       }
 export type WatchConversationSubscriptionHookResult = ReturnType<typeof useWatchConversationSubscription>;
 export type WatchConversationSubscriptionResult = Apollo.SubscriptionResult<WatchConversationSubscription>;
+export const CreatePlaylistDocument = gql`
+    mutation createPlaylist($name: String!, $public: Boolean!, $everyoneCanEdit: Boolean!) {
+  createOnePlaylist(
+    input: {playlist: {name: $name, public: $public, everyoneCanEdit: $everyoneCanEdit}}
+  ) {
+    id
+  }
+}
+    `;
+export type CreatePlaylistMutationFn = Apollo.MutationFunction<CreatePlaylistMutation, CreatePlaylistMutationVariables>;
+
+/**
+ * __useCreatePlaylistMutation__
+ *
+ * To run a mutation, you first call `useCreatePlaylistMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreatePlaylistMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createPlaylistMutation, { data, loading, error }] = useCreatePlaylistMutation({
+ *   variables: {
+ *      name: // value for 'name'
+ *      public: // value for 'public'
+ *      everyoneCanEdit: // value for 'everyoneCanEdit'
+ *   },
+ * });
+ */
+export function useCreatePlaylistMutation(baseOptions?: Apollo.MutationHookOptions<CreatePlaylistMutation, CreatePlaylistMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreatePlaylistMutation, CreatePlaylistMutationVariables>(CreatePlaylistDocument, options);
+      }
+export type CreatePlaylistMutationHookResult = ReturnType<typeof useCreatePlaylistMutation>;
+export type CreatePlaylistMutationResult = Apollo.MutationResult<CreatePlaylistMutation>;
+export type CreatePlaylistMutationOptions = Apollo.BaseMutationOptions<CreatePlaylistMutation, CreatePlaylistMutationVariables>;
+export const PlaylistDocument = gql`
+    query playlist($id: ID!) {
+  playlist(id: $id) {
+    id
+    name
+    owner {
+      id
+      name
+    }
+  }
+}
+    `;
+
+/**
+ * __usePlaylistQuery__
+ *
+ * To run a query within a React component, call `usePlaylistQuery` and pass it any options that fit your needs.
+ * When your component renders, `usePlaylistQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = usePlaylistQuery({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function usePlaylistQuery(baseOptions: Apollo.QueryHookOptions<PlaylistQuery, PlaylistQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<PlaylistQuery, PlaylistQueryVariables>(PlaylistDocument, options);
+      }
+export function usePlaylistLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<PlaylistQuery, PlaylistQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<PlaylistQuery, PlaylistQueryVariables>(PlaylistDocument, options);
+        }
+export type PlaylistQueryHookResult = ReturnType<typeof usePlaylistQuery>;
+export type PlaylistLazyQueryHookResult = ReturnType<typeof usePlaylistLazyQuery>;
+export type PlaylistQueryResult = Apollo.QueryResult<PlaylistQuery, PlaylistQueryVariables>;
+export function refetchPlaylistQuery(variables?: PlaylistQueryVariables) {
+      return { query: PlaylistDocument, variables: variables }
+    }
 export const SessionDocument = gql`
     query session {
   me {

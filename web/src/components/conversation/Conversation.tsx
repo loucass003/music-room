@@ -1,37 +1,36 @@
 import { classValidatorResolver } from "@hookform/resolvers/class-validator";
 import { SendMessageForm } from "@music-room/common";
+import dayjs from "dayjs";
+import relativeTime from 'dayjs/plugin/relativeTime'
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useParams } from "react-router-dom"
-import { ConversationMessage, useConversation } from "../../hooks/conversation";
+import { MessageNode, useConversation } from "../../hooks/conversation";
+import { useSession } from "../../hooks/session";
 import { FullscreenLoader } from "../commons/FullscreenLoader";
+import { ProfilePicture } from "../commons/ProfilePicture";
 import { Button } from "../commons/ui/Button";
 import { Input } from "../commons/ui/Input";
 import { ConversationNotFound } from "./ConversationNotFound";
 
+dayjs.extend(relativeTime)
 
-export function Message({ message }: { message: ConversationMessage }) {
+export interface ConversationProps {
+  id: string;
+}
+
+
+export function Message({ message }: { message: MessageNode }) {
 
   const [date, setDate] = useState('');
 
   useEffect(() => {
-    const date = new Date(Date.parse(message.createdAt));
-    const options: Intl.DateTimeFormatOptions = {
-      hour12: true,
-      day: 'numeric',
-      month: '2-digit',
-      year: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    };
-    setDate(new Intl.DateTimeFormat("en", options).format(date))
+    setDate(dayjs(message.createdAt).fromNow())
   }, [message.createdAt])
 
   return (
     <div className="flex flex-row w-full my-2 px-2 py-2 hover:bg-gray-100 gap-2">
-      <div className="flex w-11 h-11 min-w-11 rounded-full items-center justify-center bg-gray-300">
-        {message.author.name.substr(0, 1).toUpperCase()}
-      </div>
+      <ProfilePicture className="w-11 h-11" userId={message.author.id}></ProfilePicture>
       <div className="flex flex-grow flex-col">
         <div className="text-sm">
           {message.author.name}
@@ -46,11 +45,25 @@ export function Message({ message }: { message: ConversationMessage }) {
 }
 
 
-export function Conversation() {
-  const { id } = useParams<{ id: string }>()
-
-  const { state, sendMessage, nextPage } = useConversation({ conversationId: id });
+export function Conversation({ id }: ConversationProps) {
+  const { session } = useSession();
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const onNewMessage = (message: MessageNode) => {
+    if (containerRef && containerRef.current 
+        && (
+          message.author.id === session.session?.me.id 
+          || (
+            message.author.id !== session.session?.me.id 
+            && containerRef.current.offsetHeight + containerRef.current.scrollTop + 150 >= containerRef.current.scrollHeight
+          )
+        )
+    ) {
+      containerRef.current.scrollTo({ top: containerRef.current.scrollHeight });
+    }
+  }
+
+  const { state, sendMessage, loadMessages, messages } = useConversation({ conversationId: id, itemsPerPage: 15, onNewMessage });
 
   const {
     register,
@@ -70,19 +83,24 @@ export function Conversation() {
   }
 
   const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
-    if (event.currentTarget.scrollTop <= 10 && !state.loadingNextPage) {
-      nextPage();
+    if (event.currentTarget.scrollTop <= 50 && messages && messages[0]) {
+      loadMessages(messages[0].cursor);
     }
   }
 
   useLayoutEffect(() => {
     if (containerRef && containerRef.current && !state.loading)
-      containerRef.current.scrollTo({ top: containerRef.current.offsetHeight });
+      containerRef.current.scrollTo({ top: containerRef.current.scrollHeight });
+   
   }, [state.loading])
-
+  
+  useEffect(() => {
+    if (containerRef.current?.scrollTop === 0 && state.hasNextPage && messages && messages[0])
+      loadMessages(messages[0].cursor);
+  }, [messages, state.hasNextPage, containerRef, loadMessages])
 
   return (
-       state.loading 
+    state.loading 
       ? <FullscreenLoader relative></FullscreenLoader>
       : state.conversationNotFound
         ? <ConversationNotFound></ConversationNotFound>
@@ -91,8 +109,15 @@ export function Conversation() {
               {state.conversation?.members.map(({ name }) => name).join(', ')}
             </div>
             <div onScroll={(e) => handleScroll(e)} className="app-conversation__container" ref={containerRef}>
-              {state.loadingNextPage && <div>loading</div>}
-              {state.messages?.map((message) => <Message key={message.id} message={message}></Message>)}
+              {state.loadingNextPage &&
+                <div className="h-20">
+                  <FullscreenLoader relative></FullscreenLoader>
+                </div>
+              }
+              {!state.loadingNextPage && !state.hasNextPage && 
+                <div className="h-20 flex flex-col justify-center items-center text-lg font-bold">No more messages</div>
+              }
+              {messages?.map(({ node }) => <Message key={node.id} message={node}></Message>)}
             </div>
             <div className="px-2 pb-2 border-t-2 border-solid border-gray-100 py-4">
               <form className="flex flex-row w-full" onSubmit={handleSubmit(onSubmit)}>

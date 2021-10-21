@@ -9,7 +9,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   return (
     <div>
       <Navbar></Navbar>
-      <div className="container mx-4">{children}</div>
+      <div className="mx-4">{children}</div>
     </div>
   );
 }
